@@ -16,14 +16,18 @@ public class TerrainTileData
 public class TerrainTilemap : MonoBehaviour
 {
     Tilemap tilemap;
-    TMP_Text debugText;
+    TMP_Text DebugText;
 
     Dictionary<string, TerrainTileData> tile_data = new Dictionary<string, TerrainTileData>();
 
-    void Start()
+    void Awake()
     {
         tilemap = GetComponent<Tilemap>();
-        debugText = GameObject.FindGameObjectWithTag("DebugText").GetComponent<TMP_Text>();
+    }
+
+    void Start()
+    {
+        DebugText = GameObject.FindGameObjectWithTag("DebugText").GetComponent<TMP_Text>();
 
         tile_data.Add("sand", new TerrainTileData());
         tile_data["sand"].isHot = true;
@@ -49,7 +53,7 @@ public class TerrainTilemap : MonoBehaviour
 
         TerrainTileData data = GetTileData(tile ? tile.name : "");
 
-        debugText.text =
+        DebugText.text =
             $"Tile: {(tile ? tile.name : "None")}\n" +
             $"Cell: {cell.x} {cell.y}\n" +
             $"Walkable: {data.isWalkable}\n" +
@@ -64,5 +68,10 @@ public class TerrainTilemap : MonoBehaviour
             return tile_data[tileName];
 
         return new TerrainTileData();
+    }
+
+    public Vector3 GetWorldPosition(Vector3Int cell)
+    {
+        return tilemap.GetCellCenterWorld(cell);
     }
 }

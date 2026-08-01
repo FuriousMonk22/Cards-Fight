@@ -1,10 +1,10 @@
 fileFormatVersion: 2
-guid: 10c5c2004e42401ba947093e3d4ef99a
+guid: a980735de1d5965c5badc2791e11fef7
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: 8490642196906846815
-    second: tilemap_0
+      213: 3929314906698448687
+    second: tilemap 1_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -47,7 +47,7 @@ TextureImporter:
   lightmap: 0
   compressionQuality: 50
   spriteMode: 2
-  spriteExtrude: 2
+  spriteExtrude: 1
   spriteMeshType: 1
   alignment: 0
   spritePivot: {x: 0.5, y: 0.5}
@@ -75,7 +75,7 @@ TextureImporter:
     maxTextureSize: 2048
     resizeAlgorithm: 0
     textureFormat: -1
-    textureCompression: 0
+    textureCompression: 1
     compressionQuality: 50
     crunchedCompression: 0
     allowsAlphaSplitting: 0
@@ -113,10 +113,10 @@ TextureImporter:
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: f5a239db712d4d570800000000000000
-      internalID: 8490642196906846815
+      spriteID: ecaf9f894d4c1f446a922b893fd68b1a
+      internalID: 1662377759
       vertices: []
       indices: 
       edges: []
@@ -137,8 +137,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: e41ccbef7a8dc96e49afcf56287ead47
-      internalID: 575257422
+      spriteID: 08cd0c6f8e17ddc3c8299253f26bc975
+      internalID: 1258452955
       vertices: []
       indices: 
       edges: []
@@ -159,8 +159,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 6eee47c6f2a5d2c64a7258ee18b20cd4
-      internalID: 1415051281
+      spriteID: 0844847a0b33dc0779279090710969bb
+      internalID: -556376276
       vertices: []
       indices: 
       edges: []
@@ -181,8 +181,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 10ff8068dc132f080ba998743ad295b0
-      internalID: -1838915440
+      spriteID: 1afaf1e51674657469a1b850814229a0
+      internalID: 1228923482
       vertices: []
       indices: 
       edges: []
@@ -203,8 +203,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: e3b286ac7e7150bdda84050d1f356a21
-      internalID: 1495493190
+      spriteID: c40e359a847dbcc5da929c1082f70ea9
+      internalID: 1996055229
       vertices: []
       indices: 
       edges: []
@@ -225,8 +225,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 04bbc199bad355a6ca304183486ed081
-      internalID: 85630372
+      spriteID: 8bdb78ca7fe44fea58c9a36e556aabf7
+      internalID: 1828439547
       vertices: []
       indices: 
       edges: []
@@ -247,8 +247,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: e7897b466294cc7a0973d5f39bfc3184
-      internalID: 445518014
+      spriteID: 76eb14eeea6dec2e680a220d99c300a7
+      internalID: -2071997902
       vertices: []
       indices: 
       edges: []
@@ -257,7 +257,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 605b06f52e9ba7239a20eb6ffc3091c8
+    spriteID: 04226435a7dc496e18decb048d5d788f
     internalID: 0
     vertices: []
     indices: 
@@ -269,13 +269,13 @@ TextureImporter:
       - key: SpriteEditor.SliceSettings
         value: '{"sliceOnImport":false,"gridCellCount":{"x":1.0,"y":1.0},"gridSpriteSize":{"x":16.0,"y":16.0},"gridSpriteOffset":{"x":0.0,"y":0.0},"gridSpritePadding":{"x":0.0,"y":0.0},"pivot":{"x":0.5,"y":0.5},"pivotPixels":{"x":0.0,"y":0.0},"autoSlicingMethod":0,"spriteAlignment":0,"pivotUnitMode":0,"slicingType":1,"keepEmptyRects":false,"isAlternate":false}'
     nameFileIdTable:
-      tilemap_0: 8490642196906846815
-      tilemap_1: 575257422
-      tilemap_2: 1415051281
-      tilemap_3: -1838915440
-      tilemap_4: 1495493190
-      tilemap_5: 85630372
-      tilemap_6: 445518014
+      tilemap_0: 1662377759
+      tilemap_1: 1258452955
+      tilemap_2: -556376276
+      tilemap_3: 1228923482
+      tilemap_4: 1996055229
+      tilemap_5: 1828439547
+      tilemap_6: -2071997902
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
