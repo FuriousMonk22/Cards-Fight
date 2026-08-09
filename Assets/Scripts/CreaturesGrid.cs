@@ -19,11 +19,7 @@ public class CreaturesGrid : MonoBehaviour
 
     void Start()
     {
-        InitializeGrid(8, 8);
-        Spawn("Template", 0, 0);
-        Spawn("Template", 0, 0);
-        Spawn("Template", 1, 0);
-        Spawn("Template", 2, 2);
+        InitializeGrid(10, 8);
     }
 
     public void InitializeGrid(int width, int height)
@@ -37,8 +33,18 @@ public class CreaturesGrid : MonoBehaviour
 
     public bool Spawn(string creatureName, int x, int y)
     {
-        if (Creatures == null || !IsInsideBounds(x, y) || Creatures[x, y] != null)
+        if (Creatures == null){
+            Debug.Log("Failed to add creature, creature grid uninitialized.");
             return false;
+        }
+        if (!IsInsideBounds(x, y)){
+            Debug.Log("Failed to add creature, outside of bounds." + x.ToString() + y.ToString());
+            return false;
+        }
+        if (Creatures[x, y] != null) {
+            Debug.Log("Failed to add creature, slot occupied.");
+            return false;
+        }
 
         GameObject prefab = Resources.Load<GameObject>(CreaturePrefabPath + creatureName);
 
