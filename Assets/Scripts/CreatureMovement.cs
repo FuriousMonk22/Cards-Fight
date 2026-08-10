@@ -20,7 +20,7 @@ public class CreatureMovement : MonoBehaviour
     private bool moving = false;
 
     private CreaturesGrid creaturesGrid;
-    private Vector3Int currentCell;
+    public Vector3Int currentCell;
 
     private bool hasReservedTarget = false;
     private Vector3Int reservedCell;
@@ -48,6 +48,12 @@ public class CreatureMovement : MonoBehaviour
             return;
 
         MoveAlongPath();
+    }
+
+    public void RestartPath()
+    {
+        creaturesGrid.Reservations[reservedCell.x, reservedCell.y] = null;
+        StartPathfinding();
     }
 
     public void StartPathfinding()

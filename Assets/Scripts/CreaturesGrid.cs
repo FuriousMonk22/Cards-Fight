@@ -14,7 +14,7 @@ public class CreaturesGrid : MonoBehaviour
     public GameObject[,] Creatures;
     private bool dragging;
     private Vector2Int dragStart;
-    private GameObject[,] Reservations;
+    public GameObject[,] Reservations;
 
     private void Awake()
     {
@@ -34,6 +34,16 @@ public class CreaturesGrid : MonoBehaviour
         Creatures = new GameObject[width, height];
         Reservations = new GameObject[width, height];
     }
+
+    public bool IsOccupied(int x, int y)
+    {
+        if (!IsInsideBounds(x, y))
+            return true; // Outside the grid = cannot be placed
+
+        return Creatures[x, y] != null ||
+            Reservations[x, y] != null;
+    }
+
 
     public bool TryReserveCell(GameObject creature, Vector3Int cell)
     {
@@ -139,27 +149,30 @@ public class CreaturesGrid : MonoBehaviour
         Creatures[x1, y1] = Creatures[x2, y2];
         Creatures[x2, y2] = temp;
 
-        if (Creatures[x1, y1] != null)
+        if (Creatures[x1, y1] != null) {
             Creatures[x1, y1].transform.position = TerrainTM.GetWorldPosition(new Vector3Int(x1, y1, 0));
+            Creatures[x1, y1].GetComponent<CreatureMovement>().currentCell = new Vector3Int(x1, y1, 0);
+            Creatures[x1, y1].GetComponent<CreatureMovement>().RestartPath();
+        }
 
-        if (Creatures[x2, y2] != null)
+        if (Creatures[x2, y2] != null) {
             Creatures[x2, y2].transform.position = TerrainTM.GetWorldPosition(new Vector3Int(x2, y2, 0));
+            Creatures[x2, y2].GetComponent<CreatureMovement>().currentCell = new Vector3Int(x2, y2, 0);
+            Creatures[x2, y2].GetComponent<CreatureMovement>().RestartPath();
+        }
         
         Debug.Log($"Swapped ({x1}, {y1}) with ({x2}, {y2})");
     }
 
     public bool Spawn(string creatureName, int x, int y)
     {
+        Debug.Log("Spawning" + creatureName);
+
         if (Creatures == null){
             Debug.Log("Failed to add creature, creature grid uninitialized.");
             return false;
         }
-        if (!IsInsideBounds(x, y)){
-            Debug.Log("Failed to add creature, outside of bounds." + x.ToString() + y.ToString());
-            return false;
-        }
-        if (Creatures[x, y] != null) {
-            Debug.Log("Failed to add creature, slot occupied.");
+        if (IsOccupied(x, y)) {
             return false;
         }
 
