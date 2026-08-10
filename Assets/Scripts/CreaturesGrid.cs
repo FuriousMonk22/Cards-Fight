@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 public class CreaturesGrid : MonoBehaviour
 {
@@ -11,6 +12,8 @@ public class CreaturesGrid : MonoBehaviour
     public float CellSize = 1f;
 
     public GameObject[,] Creatures;
+    private bool dragging;
+    private Vector2Int dragStart;
     private GameObject[,] Reservations;
 
     private void Awake()
@@ -78,6 +81,71 @@ public class CreaturesGrid : MonoBehaviour
         }
 
         Debug.Log($"{creature.name}: {from} -> {to}");
+    }
+
+    private void Update()
+    {
+        if (Mouse.current.leftButton.wasPressedThisFrame)
+        {
+            Vector2 mouse = Mouse.current.position.ReadValue();
+
+            Vector3 world = Camera.main.ScreenToWorldPoint(
+                new Vector3(mouse.x, mouse.y, -Camera.main.transform.position.z)
+            );
+
+            Vector3Int cell = TerrainTM.tilemap.WorldToCell(world);
+
+            if (IsInsideBounds(cell.x, cell.y) && Creatures[cell.x, cell.y] != null)
+            {
+                dragging = true;
+                dragStart = new Vector2Int(cell.x, cell.y);
+            }
+        }
+
+        if (Mouse.current.leftButton.wasReleasedThisFrame && dragging)
+        {
+            dragging = false;
+
+            Vector2 mouse = Mouse.current.position.ReadValue();
+
+            Vector3 world = Camera.main.ScreenToWorldPoint(
+                new Vector3(mouse.x, mouse.y, -Camera.main.transform.position.z)
+            );
+
+            Vector3Int cell = TerrainTM.tilemap.WorldToCell(world);
+
+            if (IsInsideBounds(cell.x, cell.y))
+            {
+                Swap(
+                    dragStart.x,
+                    dragStart.y,
+                    cell.x,
+                    cell.y
+                );
+            }
+        }
+    }
+
+    public void Swap(int x1, int y1, int x2, int y2)
+    {
+        if (!IsInsideBounds(x1, y1) || !IsInsideBounds(x2, y2))
+        {
+            Debug.Log("Failed to swap creatures, outside of bounds.");
+            return;
+        }
+
+        GameObject temp = Creatures[x1, y1];
+
+        Creatures[x1, y1] = Creatures[x2, y2];
+        Creatures[x2, y2] = temp;
+
+        if (Creatures[x1, y1] != null)
+            Creatures[x1, y1].transform.position = TerrainTM.GetWorldPosition(new Vector3Int(x1, y1, 0));
+
+        if (Creatures[x2, y2] != null)
+            Creatures[x2, y2].transform.position = TerrainTM.GetWorldPosition(new Vector3Int(x2, y2, 0));
+        
+        Debug.Log($"Swapped ({x1}, {y1}) with ({x2}, {y2})");
     }
 
     public bool Spawn(string creatureName, int x, int y)

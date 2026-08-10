@@ -45,7 +45,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1c3c8a29fd6ca1150ab3a73662f4592b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CreatureData
-  Name: Template Creature
+  Name: Template
   Sprite: {fileID: 21300000, guid: 575536c3d1c3ce6cba3d8d01bfcf3ce1, type: 3}
   canSwim: 0
   canWalk: 1

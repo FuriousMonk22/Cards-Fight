@@ -3,6 +3,8 @@ using UnityEngine;
 [System.Serializable]
 public class CreatureData : MonoBehaviour
 {
+    private const string CreaturePath = "Creatures/";
+
     public string Name;
     public Sprite Sprite;
 
@@ -20,7 +22,13 @@ public class CreatureData : MonoBehaviour
     public int AttackRange;
 
     public CreatureArchetype Class;
-}
+
+    public static CreatureData Load(string creatureName)
+    {
+        return Resources.Load<GameObject>("Creatures/" + creatureName)
+            .GetComponent<CreatureData>();
+    }
+    }
 
 public enum CreatureArchetype
 {
