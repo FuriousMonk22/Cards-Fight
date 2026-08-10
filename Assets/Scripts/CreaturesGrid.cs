@@ -14,6 +14,7 @@ public class CreaturesGrid : MonoBehaviour
     public GameObject[,] Creatures;
     private bool dragging;
     private Vector2Int dragStart;
+    private GameObject[,] Reservations;
 
     private void Awake()
     {
@@ -27,11 +28,59 @@ public class CreaturesGrid : MonoBehaviour
 
     public void InitializeGrid(int width, int height)
     {
-        Debug.Log($"Initializing grid: width={width}, height={height}");
-
         Width = width;
         Height = height;
+
         Creatures = new GameObject[width, height];
+        Reservations = new GameObject[width, height];
+    }
+
+    public bool TryReserveCell(GameObject creature, Vector3Int cell)
+    {
+        if (!IsInsideBounds(cell.x, cell.y))
+            return false;
+
+        // E ocupată de altă creatură
+        if (Creatures[cell.x, cell.y] != null &&
+            Creatures[cell.x, cell.y] != creature)
+        {
+            return false;
+        }
+
+        // E deja rezervată de altcineva
+        if (Reservations[cell.x, cell.y] != null &&
+            Reservations[cell.x, cell.y] != creature)
+        {
+            return false;
+        }
+
+        Reservations[cell.x, cell.y] = creature;
+
+        return true;
+    }
+
+    public void CompleteMove(
+    GameObject creature,
+    Vector3Int from,
+    Vector3Int to)
+    {
+        // Eliberăm celula veche
+        if (IsInsideBounds(from.x, from.y) &&
+            Creatures[from.x, from.y] == creature)
+        {
+            Creatures[from.x, from.y] = null;
+        }
+
+        // Ocupăm celula nouă
+        Creatures[to.x, to.y] = creature;
+
+        // Scoatem rezervarea
+        if (Reservations[to.x, to.y] == creature)
+        {
+            Reservations[to.x, to.y] = null;
+        }
+
+        Debug.Log($"{creature.name}: {from} -> {to}");
     }
 
     private void Update()
@@ -123,19 +172,41 @@ public class CreaturesGrid : MonoBehaviour
         }
 
         GameObject go = Instantiate(prefab, transform);
-        Creatures[x, y] = go;
-        go.transform.position = TerrainTM.GetWorldPosition(new Vector3Int(x, y, 0));
-        CreatureData creature = go.GetComponent<CreatureData>();
 
-        // ################################
-        // Temporary code fix for showing creature sprite, to be added in separate class
-        go.AddComponent<SpriteRenderer>();
-        SpriteRenderer renderer = go.GetComponent<SpriteRenderer>();
-        
+        Vector3Int spawnCell = new Vector3Int(x, y, 0);
+
+        Creatures[x, y] = go;
+
+        go.transform.position =
+            GridManager.Instance.GroundTilemap.GetCellCenterWorld(spawnCell);
+
+        CreatureMovement movement =
+            go.GetComponent<CreatureMovement>();
+
+        if (movement != null)
+        {
+            movement.Initialize(this, spawnCell);
+        }
+        else
+        {
+            Debug.LogError("Prefab-ul nu are CreatureMovement!");
+        }
+
+        CreatureData creature =
+            go.GetComponent<CreatureData>();
+
+        // Sprite
+        SpriteRenderer renderer =
+            go.GetComponent<SpriteRenderer>();
+
+        if (renderer == null)
+            renderer = go.AddComponent<SpriteRenderer>();
+
         if (creature.Sprite != null)
+        {
             renderer.sprite = creature.Sprite;
             renderer.sortingOrder = 1;
-        // ################################
+        }
 
         return true;
     }
