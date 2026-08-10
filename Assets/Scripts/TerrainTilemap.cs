@@ -15,7 +15,7 @@ public class TerrainTileData
 
 public class TerrainTilemap : MonoBehaviour
 {
-    Tilemap tilemap;
+    public Tilemap tilemap;
     TMP_Text DebugText;
 
     Dictionary<string, TerrainTileData> tile_data = new Dictionary<string, TerrainTileData>();
