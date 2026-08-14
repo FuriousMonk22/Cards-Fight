@@ -9,7 +9,7 @@ public class CreatureMovement : MonoBehaviour
     //[SerializeField] private Tilemap obstacleTilemap;
 
     [Header("Target")]
-    [SerializeField] private Vector3Int enemyCell;
+    [SerializeField] public Vector3Int enemyCell;
 
     [Header("Movement")]
     [SerializeField] private float moveSpeed = 3f;
@@ -24,6 +24,10 @@ public class CreatureMovement : MonoBehaviour
 
     private bool hasReservedTarget = false;
     private Vector3Int reservedCell;
+    private bool pathUpdatePending = false;
+
+
+    public bool IsMovingBetweenCells => moving && hasReservedTarget;
 
     public void Initialize(
     CreaturesGrid grid,
@@ -50,14 +54,55 @@ public class CreatureMovement : MonoBehaviour
         MoveAlongPath();
     }
 
+//    public void RestartPath()
+//    {
+//        creaturesGrid.Reservations[reservedCell.x, reservedCell.y] = null;
+//        StartPathfinding();
+//    }
+
     public void RestartPath()
     {
-        creaturesGrid.Reservations[reservedCell.x, reservedCell.y] = null;
+        // If we're currently moving between cells,
+        // don't interrupt that movement.
+        if (moving && hasReservedTarget)
+        {
+            pathUpdatePending = true;
+            return;
+        }
+
+        RestartPathImmediately();
+    }
+
+    private void RestartPathImmediately()
+    {
+        pathUpdatePending = false;
+
+        if (hasReservedTarget)
+        {
+            if (creaturesGrid.IsInsideBounds(
+                reservedCell.x,
+                reservedCell.y))
+            {
+                if (creaturesGrid.Reservations[
+                    reservedCell.x,
+                    reservedCell.y] == gameObject)
+                {
+                    creaturesGrid.Reservations[
+                        reservedCell.x,
+                        reservedCell.y] = null;
+                }
+            }
+
+            hasReservedTarget = false;
+        }
+
         StartPathfinding();
     }
 
     public void StartPathfinding()
     {
+        moving = false;
+
         Vector3Int startCell = currentCell;
 
         transform.position =
@@ -67,14 +112,14 @@ public class CreatureMovement : MonoBehaviour
 
         if (path == null || path.Count == 0)
         {
-            Debug.LogWarning("Nu există drum către inamic!");
+            Debug.LogWarning(
+                $"{gameObject.name}: Nu există drum către inamic!");
             return;
         }
 
         currentPathIndex = 0;
         moving = true;
     }
-
     void MoveAlongPath()
     {
         if (currentPathIndex >= path.Count)
@@ -133,13 +178,19 @@ public class CreatureMovement : MonoBehaviour
             hasReservedTarget = false;
 
             currentPathIndex++;
+
+            // We have reached a stable grid cell.
+            // It is now safe to recalculate the path.
+            if (pathUpdatePending)
+            {
+                RestartPathImmediately();
+            }
         }
     }
 
     // ==============================
     // A*
     // ==============================
-
     List<Vector3Int> FindPath(
         Vector3Int start,
         Vector3Int target)
@@ -177,8 +228,14 @@ public class CreatureMovement : MonoBehaviour
             openList.Remove(current);
             closedList.Add(current);
 
-            foreach (Vector3Int neighbour in
-                     GetNeighbours(current))
+            // Get neighbours
+            List<Vector3Int> neighbours =
+                GetNeighbours(current);
+
+            // Randomize neighbour order
+            Shuffle(neighbours);
+
+            foreach (Vector3Int neighbour in neighbours)
             {
                 if (closedList.Contains(neighbour))
                     continue;
@@ -205,6 +262,18 @@ public class CreatureMovement : MonoBehaviour
         }
 
         return null;
+    }
+
+    void Shuffle(List<Vector3Int> list)
+    {
+        for (int i = list.Count - 1; i > 0; i--)
+        {
+            int randomIndex = Random.Range(0, i + 1);
+
+            Vector3Int temp = list[i];
+            list[i] = list[randomIndex];
+            list[randomIndex] = temp;
+        }
     }
 
     // ==============================

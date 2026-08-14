@@ -7,6 +7,7 @@ public class CreatureData : MonoBehaviour
 
     public string Name;
     public Sprite Sprite;
+    public int team; // TEMPORARY SOLUTION FOR TEAM MANAGEMENT, TO IMPLEMENT IN SEPARATE CLASS WHICH IS INSTANCE OF CREATURE, NOT DATA
 
     public bool canSwim;
     public bool canWalk;

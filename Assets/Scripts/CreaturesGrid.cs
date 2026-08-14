@@ -90,6 +90,7 @@ public class CreaturesGrid : MonoBehaviour
             Reservations[to.x, to.y] = null;
         }
 
+        UpdateCreaturesPath();
         Debug.Log($"{creature.name}: {from} -> {to}");
     }
 
@@ -162,6 +163,7 @@ public class CreaturesGrid : MonoBehaviour
         }
         
         Debug.Log($"Swapped ({x1}, {y1}) with ({x2}, {y2})");
+        UpdateCreaturesPath();
     }
 
     public bool Spawn(string creatureName, int x, int y)
@@ -221,7 +223,81 @@ public class CreaturesGrid : MonoBehaviour
             renderer.sortingOrder = 1;
         }
 
+        // Tint based on Y position
+        if (y < Height / 2.0) {
+            renderer.color = new Color(1f, 0.3f, 0.4f);
+            creature.team = 1;
+        }
+        else {
+            renderer.color = new Color(0.3f, 0.3f, 1f);
+            creature.team = 0;
+        }
+
+        UpdateCreaturesPath();
         return true;
+    }
+
+    public void UpdateCreaturesPath()
+    {
+        for (int i = 0; i < Width; i++)
+        {
+            for (int j = 0; j < Height; j++)
+            {
+                GameObject creature = Creatures[i, j];
+
+                if (creature == null)
+                    continue;
+
+                CreatureMovement movement =
+                    creature.GetComponent<CreatureMovement>();
+
+                if (movement == null)
+                    continue;
+
+                // Only synchronize currentCell when the creature
+                // is actually represented by this grid position.
+                if (!movement.IsMovingBetweenCells)
+                {
+                    movement.currentCell =
+                        new Vector3Int(i, j, 0);
+                }
+
+                movement.enemyCell =
+                    getClosestEnemyCell(i, j);
+
+                movement.RestartPath();
+            }
+        }
+    }
+
+    public Vector3Int getClosestEnemyCell(int x, int y)
+    {
+        if (Creatures[x, y] == null) return new Vector3Int(0, 0, 0);
+        int team = Creatures[x, y].GetComponent<CreatureData>().team;
+        int attackRange = Creatures[x, y].GetComponent<CreatureData>().AttackRange;
+
+        int min_dist = 999;
+        Vector3Int min_pos = new Vector3Int(x, y, 0);
+
+        for(int i = 0; i < Width; ++i)
+            for(int j = 0; j < Height; ++j)
+                if(Creatures[i, j] != null && Creatures[i, j].GetComponent<CreatureData>().team != team)
+                {
+                    if(getDistance(x, y, i, j) < min_dist)
+                    {
+                        min_dist = getDistance(x, y, i, j);
+                        min_pos = new Vector3Int(i, j, 0);
+                    }
+                }
+        
+        if (min_dist <= attackRange) return new Vector3Int(x, y, 0);
+
+        return min_pos;
+    }
+
+    public int getDistance(int x1, int y1, int x2, int y2)
+    {
+        return Mathf.Abs(x2 - x1) + Mathf.Abs(y2 - y1);
     }
 
     public bool IsInsideBounds(int x, int y)
