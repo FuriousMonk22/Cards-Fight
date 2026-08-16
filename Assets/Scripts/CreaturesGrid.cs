@@ -1,5 +1,7 @@
+using System;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.Rendering;
 
 public class CreaturesGrid : MonoBehaviour
 {
@@ -10,6 +12,9 @@ public class CreaturesGrid : MonoBehaviour
     public int Width = 3;
     public int Height = 3;
     public float CellSize = 1f;
+
+    public float tick_timer = 0f;
+    private float tick_length = 0.5f; 
 
     public GameObject[,] Creatures;
     private bool dragging;
@@ -105,6 +110,8 @@ public class CreaturesGrid : MonoBehaviour
             dragging = false;
             return;
         }
+        
+        Tick();
 
         if (Mouse.current.leftButton.wasPressedThisFrame)
         {
@@ -144,6 +151,17 @@ public class CreaturesGrid : MonoBehaviour
                     cell.y
                 );
             }
+        }
+    }
+
+    public void Tick()
+    {
+        tick_timer -= Time.deltaTime;
+        if(tick_timer < 0)
+        {
+            attackTick();
+            removeDeadCreatures();
+            tick_timer = tick_length;
         }
     }
 
@@ -282,6 +300,13 @@ public class CreaturesGrid : MonoBehaviour
         return true;
     }
 
+    public void RemoveCreature(int x, int y)
+    {
+        CreatureMovement cm = Creatures[x, y].GetComponent<CreatureMovement>();
+        Reservations[cm.reservedCell.x, cm.reservedCell.y] = null;
+        Destroy(Creatures[x, y]);
+    }
+
     public void UpdateCreaturesPath()
     {
         for (int i = 0; i < Width; i++)
@@ -328,9 +353,9 @@ public class CreaturesGrid : MonoBehaviour
             for(int j = 0; j < Height; ++j)
                 if(Creatures[i, j] != null && Creatures[i, j].GetComponent<CreatureData>().team != team)
                 {
-                    if(getDistance(x, y, i, j) < min_dist)
+                    if(getLinfDistance(x, y, i, j) < min_dist)
                     {
-                        min_dist = getDistance(x, y, i, j);
+                        min_dist = getLinfDistance(x, y, i, j);
                         min_pos = new Vector3Int(i, j, 0);
                     }
                 }
@@ -338,6 +363,50 @@ public class CreaturesGrid : MonoBehaviour
         if (min_dist <= attackRange) return new Vector3Int(x, y, 0);
 
         return min_pos;
+    }
+
+// apeleaza attackNearestEnemy pentru fiecare monstru
+public void attackTick()
+    {
+        for(int i=0; i<Width; i++)
+            for(int j=0; j<Height; j++)
+                if(Creatures[i,j] != null)
+                    attackNearestEnemy(i, j);
+    }
+
+// verifica intr-un box 3x3 daca exista un inamic si ataca (todo: adapteaza dupa range-ul creature-ului)
+    public void attackNearestEnemy(int x, int y)
+    {
+        if(Creatures[x, y] == null) return;
+
+        for(int i = -1; i < 2; i++)
+            for(int j = -1; j < 2; j++)
+            {
+                int x2 = x + i;
+                int y2 = y + j;
+                if(IsInsideBounds(x2, y2) && (x2 != x || y2 != y) && Creatures[x2, y2] != null)
+                {
+                    CreatureData attacking_creature = Creatures[x, y].GetComponent<CreatureData>();
+                    CreatureData damaged_creature = Creatures[x2, y2].GetComponent<CreatureData>();
+
+                    if(attacking_creature.team == damaged_creature.team) continue;
+
+                    damaged_creature.TakeDamage(attacking_creature.Attack);
+                    return;
+                }
+            }
+    }
+
+    public void removeDeadCreatures()
+    {
+        for(int i=0; i<Width; i++) for(int j=0; j<Height; j++)
+            if(Creatures[i, j] != null && Creatures[i, j].GetComponent<CreatureData>().Health < 0)
+                RemoveCreature(i, j);
+    }
+
+    public int getLinfDistance(int x1, int y1, int x2, int y2)
+    {
+        return Math.Max(Math.Abs(x1 - x2), Math.Abs(y1 - y2));
     }
 
     public int getDistance(int x1, int y1, int x2, int y2)
