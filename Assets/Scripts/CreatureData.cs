@@ -60,11 +60,6 @@ public class CreatureData : MonoBehaviour
             Health = 0;
 
         UpdateHealthText();
-
-        if (Health <= 0)
-        {
-            Destroy(gameObject);
-        }
     }
 
     private void UpdateHealthText()

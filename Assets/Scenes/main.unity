@@ -1782,6 +1782,7 @@ MonoBehaviour:
   Width: 3
   Height: 3
   CellSize: 1
+  tick_timer: 0
 --- !u!1 &795245719
 GameObject:
   m_ObjectHideFlags: 0
@@ -2398,7 +2399,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::GamePhaseManager
   timer: {fileID: 1648433539}
   creaturesGrid: {fileID: 779065672}
-  preparationDuration: 20
+  preparationDuration: 7
   combatDuration: 30
 --- !u!1 &1714788402
 GameObject:

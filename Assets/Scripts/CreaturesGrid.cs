@@ -108,10 +108,9 @@ public class CreaturesGrid : MonoBehaviour
         !GamePhaseManager.Instance.CanPlaceCreatures)
         {
             dragging = false;
+            Tick();
             return;
         }
-        
-        Tick();
 
         if (Mouse.current.leftButton.wasPressedThisFrame)
         {
@@ -365,14 +364,14 @@ public class CreaturesGrid : MonoBehaviour
         return min_pos;
     }
 
-// apeleaza attackNearestEnemy pentru fiecare monstru
-public void attackTick()
-    {
-        for(int i=0; i<Width; i++)
-            for(int j=0; j<Height; j++)
-                if(Creatures[i,j] != null)
-                    attackNearestEnemy(i, j);
-    }
+    // apeleaza attackNearestEnemy pentru fiecare monstru
+    public void attackTick()
+        {
+            for(int i=0; i<Width; i++)
+                for(int j=0; j<Height; j++)
+                    if(Creatures[i,j] != null)
+                        attackNearestEnemy(i, j);
+        }
 
 // verifica intr-un box 3x3 daca exista un inamic si ataca (todo: adapteaza dupa range-ul creature-ului)
     public void attackNearestEnemy(int x, int y)
@@ -400,7 +399,7 @@ public void attackTick()
     public void removeDeadCreatures()
     {
         for(int i=0; i<Width; i++) for(int j=0; j<Height; j++)
-            if(Creatures[i, j] != null && Creatures[i, j].GetComponent<CreatureData>().Health < 0)
+            if(Creatures[i, j] != null && Creatures[i, j].GetComponent<CreatureData>().Health <= 0)
                 RemoveCreature(i, j);
     }
 

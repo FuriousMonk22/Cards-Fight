@@ -15,8 +15,8 @@ public class GamePhaseManager : MonoBehaviour
     [SerializeField] private CreaturesGrid creaturesGrid;
 
     [Header("Durations")]
-    [SerializeField] private float preparationDuration = 20f;
-    [SerializeField] private float combatDuration = 30f;
+    [SerializeField] private float preparationDuration = 10f;
+    [SerializeField] private float combatDuration = 20f;
 
     public GamePhase CurrentPhase { get; private set; }
 
