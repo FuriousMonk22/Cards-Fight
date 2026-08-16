@@ -1,4 +1,5 @@
 using UnityEngine;
+using TMPro;
 
 [System.Serializable]
 public class CreatureData : MonoBehaviour
@@ -7,7 +8,7 @@ public class CreatureData : MonoBehaviour
 
     public string Name;
     public Sprite Sprite;
-    public int team; // TEMPORARY SOLUTION FOR TEAM MANAGEMENT, TO IMPLEMENT IN SEPARATE CLASS WHICH IS INSTANCE OF CREATURE, NOT DATA
+    public int team;
 
     public bool canSwim;
     public bool canWalk;
@@ -24,12 +25,62 @@ public class CreatureData : MonoBehaviour
 
     public CreatureArchetype Class;
 
+    private TextMeshPro healthText;
+
+    void Start()
+    {
+        CreateHealthText();
+    }
+
+    private void CreateHealthText()
+    {
+        GameObject textObject = new GameObject("HealthText");
+
+        textObject.transform.SetParent(transform);
+        textObject.transform.localPosition = new Vector3(0f, 0f, 0f);
+
+        healthText = textObject.AddComponent<TextMeshPro>();
+
+        healthText.text = Health.ToString();
+        healthText.fontSize = 10;
+        healthText.alignment = TextAlignmentOptions.Center;
+
+        healthText.rectTransform.pivot = new Vector2(0.5f, 0.5f);
+
+        healthText.color = Color.red;
+
+        healthText.renderer.sortingOrder = 100;
+    }
+
+    public void TakeDamage(int damage)
+    {
+        Health -= damage;
+
+        if (Health < 0)
+            Health = 0;
+
+        UpdateHealthText();
+
+        if (Health <= 0)
+        {
+            Destroy(gameObject);
+        }
+    }
+
+    private void UpdateHealthText()
+    {
+        if (healthText != null)
+        {
+            healthText.text = Health.ToString();
+        }
+    }
+
     public static CreatureData Load(string creatureName)
     {
-        return Resources.Load<GameObject>("Creatures/" + creatureName)
+        return Resources.Load<GameObject>(CreaturePath + creatureName)
             .GetComponent<CreatureData>();
     }
-    }
+}
 
 public enum CreatureArchetype
 {

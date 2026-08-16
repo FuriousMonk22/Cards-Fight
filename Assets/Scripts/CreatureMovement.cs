@@ -23,7 +23,7 @@ public class CreatureMovement : MonoBehaviour
     public Vector3Int currentCell;
 
     private bool hasReservedTarget = false;
-    private Vector3Int reservedCell;
+    public Vector3Int reservedCell;
     private bool pathUpdatePending = false;
 
 

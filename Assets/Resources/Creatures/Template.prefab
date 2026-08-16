@@ -47,11 +47,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CreatureData
   Name: Template
   Sprite: {fileID: 21300000, guid: 575536c3d1c3ce6cba3d8d01bfcf3ce1, type: 3}
+  team: 0
   canSwim: 0
   canWalk: 1
   canFly: 0
   Health: 10
-  Attack: 10
+  Attack: 4
   Shield: 10
   CriticalChance: 10
   DodgeChance: 10
@@ -73,3 +74,5 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CreatureMovement
   enemyCell: {x: 2, y: 3, z: 0}
   moveSpeed: 1
+  currentCell: {x: 0, y: 0, z: 0}
+  reservedCell: {x: 0, y: 0, z: 0}
