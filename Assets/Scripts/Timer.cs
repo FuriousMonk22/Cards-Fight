@@ -10,7 +10,7 @@ public class Timer : MonoBehaviour
     [SerializeField] private TMP_Text timerText;
 
     [Header("Timer")]
-    [SerializeField] private float duration = 60f;
+    [SerializeField] public float duration = 60f;
     [SerializeField] private bool startAutomatically = true;
 
     [Header("Warning")]

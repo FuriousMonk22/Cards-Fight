@@ -23,7 +23,10 @@ public class CreaturesGrid : MonoBehaviour
 
     private void Awake()
     {
-        TerrainTM = GameObject.FindWithTag("TerrainTilemap").GetComponent<TerrainTilemap>();
+        TerrainTM = GameObject.FindWithTag("TerrainTilemap")
+            .GetComponent<TerrainTilemap>();
+
+        InitializeGrid(10, 8);
     }
 
     void Start()
@@ -101,6 +104,13 @@ public class CreaturesGrid : MonoBehaviour
 
     private void Update()
     {
+        if (GamePhaseManager.Instance != null &&
+        !GamePhaseManager.Instance.CanPlaceCreatures)
+        {
+            dragging = false;
+            return;
+        }
+        
         Tick();
 
         if (Mouse.current.leftButton.wasPressedThisFrame)
@@ -157,6 +167,13 @@ public class CreaturesGrid : MonoBehaviour
 
     public void Swap(int x1, int y1, int x2, int y2)
     {
+        if (GamePhaseManager.Instance != null &&
+        !GamePhaseManager.Instance.CanPlaceCreatures)
+        {
+            Debug.Log("Cannot swap creatures during combat.");
+            return;
+        }
+
         if (!IsInsideBounds(x1, y1) || !IsInsideBounds(x2, y2))
         {
             Debug.Log("Failed to swap creatures, outside of bounds.");
@@ -186,6 +203,34 @@ public class CreaturesGrid : MonoBehaviour
 
     public bool Spawn(string creatureName, int x, int y)
     {
+        Debug.Log(
+        $"Trying Spawn {creatureName} at {x},{y}. " +
+        $"Phase = {GamePhaseManager.Instance?.CurrentPhase}"
+    );
+
+        if (GamePhaseManager.Instance != null &&
+            !GamePhaseManager.Instance.CanPlaceCreatures)
+        {
+            Debug.LogWarning(
+                $"SPAWN BLOCKED! Current phase: " +
+                $"{GamePhaseManager.Instance.CurrentPhase}"
+            );
+
+            return false;
+        }
+
+        if (Creatures == null)
+        {
+            Debug.LogError("Creatures array is NULL!");
+            return false;
+        }
+
+        if (IsOccupied(x, y))
+        {
+            Debug.LogWarning($"Cell {x},{y} is occupied!");
+            return false;
+        }
+
         Debug.Log("Spawning" + creatureName);
 
         if (Creatures == null){
@@ -372,5 +417,56 @@ public void attackTick()
     public bool IsInsideBounds(int x, int y)
     {
         return x >= 0 && x < Width && y >= 0 && y < Height;
+    }
+
+    public void StartCombat()
+    {
+        if (Creatures == null)
+        {
+            Debug.LogError("Cannot start combat: grid not initialized.");
+            return;
+        }
+
+        for (int x = 0; x < Width; x++)
+        {
+            for (int y = 0; y < Height; y++)
+            {
+                GameObject creature = Creatures[x, y];
+
+                if (creature == null)
+                    continue;
+
+                CreatureMovement movement =
+                    creature.GetComponent<CreatureMovement>();
+
+                if (movement != null)
+                    movement.SetCombatActive(true);
+            }
+        }
+
+        UpdateCreaturesPath();
+    }
+
+    public void StopCombat()
+    {
+        if (Creatures == null)
+            return;
+
+        for (int x = 0; x < Width; x++)
+        {
+            for (int y = 0; y < Height; y++)
+            {
+                GameObject creature = Creatures[x, y];
+
+                if (creature == null)
+                    continue;
+
+                CreatureMovement movement =
+                    creature.GetComponent<CreatureMovement>();
+
+                if (movement != null)
+                    movement.SetCombatActive(false);
+            }
+        }
     }
 }
