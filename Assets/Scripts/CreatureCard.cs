@@ -85,6 +85,12 @@ public class CreatureCard : MonoBehaviour, IPointerDownHandler, IPointerUpHandle
 
     public void OnPointerDown(PointerEventData eventData)
     {
+        if (GamePhaseManager.Instance != null &&
+            !GamePhaseManager.Instance.CanPlaceCreatures)
+        {
+            return;
+        }
+
         dragging = true;
 
         cardWorldPosition = Camera.main.ScreenToWorldPoint(
@@ -105,6 +111,12 @@ public class CreatureCard : MonoBehaviour, IPointerDownHandler, IPointerUpHandle
 
         dragging = false;
         line.enabled = false;
+
+        if (GamePhaseManager.Instance != null &&
+            !GamePhaseManager.Instance.CanPlaceCreatures)
+        {
+            return;
+        }
 
         Vector3 worldPosition = Camera.main.ScreenToWorldPoint(
             new Vector3(

@@ -29,9 +29,11 @@ public class CreatureMovement : MonoBehaviour
 
     public bool IsMovingBetweenCells => moving && hasReservedTarget;
 
+    private bool combatActive = false;
+
     public void Initialize(
-    CreaturesGrid grid,
-    Vector3Int spawnCell)
+        CreaturesGrid grid,
+        Vector3Int spawnCell)
     {
         creaturesGrid = grid;
 
@@ -43,25 +45,72 @@ public class CreatureMovement : MonoBehaviour
         transform.position =
             groundTilemap.GetCellCenterWorld(currentCell);
 
-        StartPathfinding();
+        moving = false;
     }
 
     void Update()
     {
+        if (!combatActive)
+            return;
+
         if (!moving)
             return;
 
         MoveAlongPath();
     }
 
-//    public void RestartPath()
-//    {
-//        creaturesGrid.Reservations[reservedCell.x, reservedCell.y] = null;
-//        StartPathfinding();
-//    }
+    public void SetCombatActive(bool active)
+    {
+        combatActive = active;
+
+        if (active)
+            return;
+
+        // Combatul s-a terminat
+
+        moving = false;
+        pathUpdatePending = false;
+        path = null;
+        currentPathIndex = 0;
+
+        // Dacă eram în drum spre o celulă,
+        // anulăm rezervarea.
+        if (hasReservedTarget)
+        {
+            if (creaturesGrid.IsInsideBounds(
+                reservedCell.x,
+                reservedCell.y))
+            {
+                if (creaturesGrid.Reservations[
+                    reservedCell.x,
+                    reservedCell.y] == gameObject)
+                {
+                    creaturesGrid.Reservations[
+                        reservedCell.x,
+                        reservedCell.y] = null;
+                }
+            }
+
+            hasReservedTarget = false;
+        }
+
+        // Revenim exact în centrul celulei
+        // pe care grid-ul ne consideră încă.
+        transform.position =
+            groundTilemap.GetCellCenterWorld(currentCell);
+    }
+
+    //    public void RestartPath()
+    //    {
+    //        creaturesGrid.Reservations[reservedCell.x, reservedCell.y] = null;
+    //        StartPathfinding();
+    //    }
 
     public void RestartPath()
     {
+        if (!combatActive)
+            return;
+
         // If we're currently moving between cells,
         // don't interrupt that movement.
         if (moving && hasReservedTarget)
@@ -101,6 +150,9 @@ public class CreatureMovement : MonoBehaviour
 
     public void StartPathfinding()
     {
+        if (!combatActive)
+            return;
+
         moving = false;
 
         Vector3Int startCell = currentCell;
