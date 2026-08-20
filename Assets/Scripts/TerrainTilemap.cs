@@ -27,21 +27,71 @@ public class TerrainTilemap : MonoBehaviour
 
     void Start()
     {
-        DebugText = GameObject.FindGameObjectWithTag("DebugText").GetComponent<TMP_Text>();
+        DebugText = GameObject.FindGameObjectWithTag("DebugText")
+            .GetComponent<TMP_Text>();
 
-        tile_data.Add("sand", new TerrainTileData());
-        tile_data["sand"].isHot = true;
+        // FIELD
+        tile_data.Add("field", new TerrainTileData
+        {
+            isWalkable = true,
+            isSwimmable = false
+        });
 
+        // FOREST
+        tile_data.Add("forest", new TerrainTileData
+        {
+            isWalkable = true,
+            isSwimmable = false
+        });
 
-        tile_data.Add("water", new TerrainTileData());
-        tile_data["water"].isSwimmable = true;
+        // MOUNTAIN
+        // Perete pentru walk/swim.
+        // Flying poate trece peste el.
+        tile_data.Add("mountain", new TerrainTileData
+        {
+            isWalkable = false,
+            isSwimmable = false,
+            isCold = true
+        });
 
-        tile_data.Add("snow", new TerrainTileData());
-        tile_data["snow"].isCold = true;
+        // SAND
+        tile_data.Add("sand", new TerrainTileData
+        {
+            isWalkable = true,
+            isSwimmable = false,
+            //isHot = true
+        });
 
+        // SNOW
+        tile_data.Add("snow", new TerrainTileData
+        {
+            isWalkable = true,
+            isSwimmable = false,
+            //isCold = true
+        });
 
-        tile_data.Add("mountain", new TerrainTileData());
-        tile_data["mountain"].isCold = true;
+        // WATER
+        tile_data.Add("water", new TerrainTileData
+        {
+            isWalkable = false,
+            isSwimmable = true
+        });
+
+        // VOID
+        // Nimeni care merge sau înoată nu poate intra.
+        tile_data.Add("void", new TerrainTileData
+        {
+            isWalkable = false,
+            isSwimmable = false
+        });
+
+        // NEW TILE
+        // Până când îi dai un rol clar, îl tratăm ca perete.
+        tile_data.Add("New Tile", new TerrainTileData
+        {
+            isWalkable = false,
+            isSwimmable = false
+        });
     }
 
     void Update()
@@ -60,6 +110,45 @@ public class TerrainTilemap : MonoBehaviour
             $"Swimmable: {data.isSwimmable}\n" +
             $"Hot: {data.isHot}\n" +
             $"Cold: {data.isCold}";
+    }
+
+    public bool CanCreatureTraverse(
+    Vector3Int cell,
+    CreatureData creature)
+    {
+        if (creature == null)
+            return false;
+
+        TileBase tile = tilemap.GetTile(cell);
+
+        if (tile == null)
+            return false;
+
+        TerrainTileData data =
+            GetTileData(tile.name);
+
+        // VOID = perete absolut.
+        // Nici măcar flying nu poate trece.
+        if (tile.name == "void")
+            return false;
+
+        // Flying poate trece peste orice alt teren.
+        if (creature.canFly)
+            return true;
+
+        if (creature.canWalk &&
+            data.isWalkable)
+        {
+            return true;
+        }
+
+        if (creature.canSwim &&
+            data.isSwimmable)
+        {
+            return true;
+        }
+
+        return false;
     }
 
     TerrainTileData GetTileData(string tileName)

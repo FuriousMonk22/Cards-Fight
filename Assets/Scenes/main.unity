@@ -1614,8 +1614,8 @@ Tilemap:
   - first: {x: 8, y: 7, z: 0}
     second:
       serializedVersion: 2
-      m_TileIndex: 4
-      m_TileSpriteIndex: 6
+      m_TileIndex: 7
+      m_TileSpriteIndex: 7
       m_TileMatrixIndex: 0
       m_TileColorIndex: 0
       m_TileObjectToInstantiateIndex: 65535
@@ -1771,13 +1771,13 @@ Tilemap:
     m_Data: {fileID: 11400000, guid: d2ba9cd5ca13bb0598ab833d038e4e28, type: 2}
   - m_RefCount: 8
     m_Data: {fileID: 11400000, guid: fc9ed699618acea4cbf043e116d431d4, type: 2}
-  - m_RefCount: 13
+  - m_RefCount: 12
     m_Data: {fileID: 11400000, guid: 42ffe4b874bc67dd79e56964e4219840, type: 2}
   - m_RefCount: 7
     m_Data: {fileID: 11400000, guid: 230afad3a78b0787598f8b7806b96ba7, type: 2}
   - m_RefCount: 41
     m_Data: {fileID: 11400000, guid: 6a163855e406082c194df60e2ea6332b, type: 2}
-  - m_RefCount: 34
+  - m_RefCount: 35
     m_Data: {fileID: 11400000, guid: 8faf0e0e2c4fa1359ba1c35e44f9af34, type: 2}
   - m_RefCount: 16
     m_Data: {fileID: 11400000, guid: a0efb823bc84ca7c6b24cabc3d5a3bfb, type: 2}
@@ -1794,9 +1794,9 @@ Tilemap:
     m_Data: {fileID: 1996055229, guid: a980735de1d5965c5badc2791e11fef7, type: 3}
   - m_RefCount: 41
     m_Data: {fileID: -2071997902, guid: a980735de1d5965c5badc2791e11fef7, type: 3}
-  - m_RefCount: 13
+  - m_RefCount: 12
     m_Data: {fileID: 1228923482, guid: a980735de1d5965c5badc2791e11fef7, type: 3}
-  - m_RefCount: 34
+  - m_RefCount: 35
     m_Data: {fileID: -556376276, guid: a980735de1d5965c5badc2791e11fef7, type: 3}
   - m_RefCount: 16
     m_Data: {fileID: 1258452955, guid: a980735de1d5965c5badc2791e11fef7, type: 3}
@@ -2288,7 +2288,7 @@ GameObject:
   - component: {fileID: 1273243320}
   - component: {fileID: 1273243319}
   m_Layer: 5
-  m_Name: Panel
+  m_Name: TimerSkipper
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2682,6 +2682,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 66a90f3d92e934146b871bc6c06829ae, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GamePhaseManager
+  TimerSkipInstance: {fileID: 1273243315}
   timer: {fileID: 1648433539}
   creaturesGrid: {fileID: 779065672}
   preparationDuration: 15
@@ -2922,10 +2923,10 @@ Camera:
   m_LensShift: {x: 0, y: 0}
   m_NormalizedViewPortRect:
     serializedVersion: 2
-    x: 0
-    y: 0
-    width: 1
-    height: 1
+    x: 0.0014630578
+    y: 0.0014084507
+    width: 0.99634236
+    height: 0.9971831
   near clip plane: 0.3
   far clip plane: 1000
   field of view: 60

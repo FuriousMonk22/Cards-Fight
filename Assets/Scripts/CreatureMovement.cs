@@ -6,6 +6,8 @@ public class CreatureMovement : MonoBehaviour
 {
     [Header("Grid")]
     private Tilemap groundTilemap;
+    private TerrainTilemap terrainTilemap;
+    private CreatureData creatureData;
     //[SerializeField] private Tilemap obstacleTilemap;
 
     [Header("Target")]
@@ -32,13 +34,19 @@ public class CreatureMovement : MonoBehaviour
     private bool combatActive = false;
 
     public void Initialize(
-        CreaturesGrid grid,
-        Vector3Int spawnCell)
+    CreaturesGrid grid,
+    Vector3Int spawnCell)
     {
         creaturesGrid = grid;
 
         groundTilemap =
             GridManager.Instance.GroundTilemap;
+
+        terrainTilemap =
+            groundTilemap.GetComponent<TerrainTilemap>();
+
+        creatureData =
+            GetComponent<CreatureData>();
 
         currentCell = spawnCell;
 
@@ -244,8 +252,8 @@ public class CreatureMovement : MonoBehaviour
     // A*
     // ==============================
     List<Vector3Int> FindPath(
-        Vector3Int start,
-        Vector3Int target)
+    Vector3Int start,
+    Vector3Int target)
     {
         List<Vector3Int> openList =
             new List<Vector3Int>();
@@ -262,12 +270,45 @@ public class CreatureMovement : MonoBehaviour
         openList.Add(start);
         gCost[start] = 0;
 
+        // Dacă target-ul este imposibil de atins,
+        // vom ține minte cea mai apropiată
+        // celulă la care chiar putem ajunge.
+        Vector3Int closestReachableCell = start;
+
+        int closestDistance =
+            ManhattanDistance(start, target);
+
         while (openList.Count > 0)
         {
             Vector3Int current =
-                GetLowestFCost(openList, gCost, target);
+                GetLowestFCost(
+                    openList,
+                    gCost,
+                    target
+                );
 
-            // Am găsit ținta
+            // ==========================
+            // Reținem cea mai apropiată
+            // poziție accesibilă de target.
+            // ==========================
+
+            int distanceToTarget =
+                ManhattanDistance(
+                    current,
+                    target
+                );
+
+            if (distanceToTarget <
+                closestDistance)
+            {
+                closestDistance =
+                    distanceToTarget;
+
+                closestReachableCell =
+                    current;
+            }
+
+            // Target-ul chiar este accesibil.
             if (current == target)
             {
                 return ReconstructPath(
@@ -280,30 +321,38 @@ public class CreatureMovement : MonoBehaviour
             openList.Remove(current);
             closedList.Add(current);
 
-            // Get neighbours
             List<Vector3Int> neighbours =
                 GetNeighbours(current);
 
-            // Randomize neighbour order
             Shuffle(neighbours);
 
-            foreach (Vector3Int neighbour in neighbours)
+            foreach (Vector3Int neighbour
+                     in neighbours)
             {
                 if (closedList.Contains(neighbour))
                     continue;
 
-                if (!IsWalkable(neighbour, target))
+                // AICI terenul funcționează
+                // efectiv ca un perete.
+                if (!IsWalkable(
+                        neighbour,
+                        target))
+                {
                     continue;
+                }
 
                 int tentativeGCost =
                     gCost[current] + 1;
 
                 if (!gCost.ContainsKey(neighbour) ||
-                    tentativeGCost < gCost[neighbour])
+                    tentativeGCost <
+                    gCost[neighbour])
                 {
-                    cameFrom[neighbour] = current;
+                    cameFrom[neighbour] =
+                        current;
 
-                    gCost[neighbour] = tentativeGCost;
+                    gCost[neighbour] =
+                        tentativeGCost;
 
                     if (!openList.Contains(neighbour))
                     {
@@ -313,6 +362,23 @@ public class CreatureMovement : MonoBehaviour
             }
         }
 
+        // ==========================
+        // TARGET IMPOSIBIL
+        // ==========================
+
+        // N-am ajuns la target, dar am găsit
+        // o celulă accesibilă mai aproape de el.
+        if (closestReachableCell != start)
+        {
+            return ReconstructPath(
+                cameFrom,
+                start,
+                closestReachableCell
+            );
+        }
+
+        // Nu există nici măcar o celulă
+        // accesibilă mai aproape.
         return null;
     }
 
@@ -351,7 +417,6 @@ public class CreatureMovement : MonoBehaviour
     Vector3Int cell,
     Vector3Int target)
     {
-        // Trebuie să fie în grid.
         if (!creaturesGrid.IsInsideBounds(
                 cell.x,
                 cell.y))
@@ -359,42 +424,9 @@ public class CreatureMovement : MonoBehaviour
             return false;
         }
 
-        // Trebuie să existe ground.
-        if (!groundTilemap.HasTile(cell))
-            return false;
-
-        // Dacă aceasta este ținta finală,
-        // o permitem chiar dacă este ocupată.
-        //
-        // Este important pentru cazul în care
-        // toate pozițiile din jurul inamicului
-        // sunt ocupate: creatura poate calcula
-        // drumul până la coechipier și apoi
-        // TryReserveCell o va opri înainte
-        // să intre peste el.
-        if (cell == target)
-            return true;
-
-        GameObject occupant =
-            creaturesGrid.Creatures[
-                cell.x,
-                cell.y
-            ];
-
-        if (occupant != null &&
-            occupant != gameObject)
-        {
-            return false;
-        }
-
-        GameObject reservation =
-            creaturesGrid.Reservations[
-                cell.x,
-                cell.y
-            ];
-
-        if (reservation != null &&
-            reservation != gameObject)
+        if (!terrainTilemap.CanCreatureTraverse(
+                cell,
+                creatureData))
         {
             return false;
         }
