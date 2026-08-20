@@ -2,6 +2,7 @@ using System;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.Rendering;
+using System.Collections.Generic;
 
 public class CreaturesGrid : MonoBehaviour
 {
@@ -308,6 +309,12 @@ public class CreaturesGrid : MonoBehaviour
 
     public void UpdateCreaturesPath()
     {
+        // Celule de atac deja alese în recalcularea curentă.
+        // Astfel două creaturi nu aleg simultan aceeași
+        // poziție liberă de lângă inamic.
+        HashSet<Vector3Int> claimedApproachCells =
+            new HashSet<Vector3Int>();
+
         for (int i = 0; i < Width; i++)
         {
             for (int j = 0; j < Height; j++)
@@ -323,8 +330,6 @@ public class CreaturesGrid : MonoBehaviour
                 if (movement == null)
                     continue;
 
-                // Only synchronize currentCell when the creature
-                // is actually represented by this grid position.
                 if (!movement.IsMovingBetweenCells)
                 {
                     movement.currentCell =
@@ -332,36 +337,210 @@ public class CreaturesGrid : MonoBehaviour
                 }
 
                 movement.enemyCell =
-                    getClosestEnemyCell(i, j);
+                    GetBestEnemyApproachCell(
+                        i,
+                        j,
+                        claimedApproachCells
+                    );
 
                 movement.RestartPath();
             }
         }
     }
 
-    public Vector3Int getClosestEnemyCell(int x, int y)
+    public Vector3Int GetBestEnemyApproachCell(
+    int x,
+    int y,
+    HashSet<Vector3Int> claimedApproachCells)
     {
-        if (Creatures[x, y] == null) return new Vector3Int(0, 0, 0);
-        int team = Creatures[x, y].GetComponent<CreatureData>().team;
-        int attackRange = Creatures[x, y].GetComponent<CreatureData>().AttackRange;
+        GameObject creature = Creatures[x, y];
 
-        int min_dist = 999;
-        Vector3Int min_pos = new Vector3Int(x, y, 0);
+        if (creature == null)
+            return new Vector3Int(x, y, 0);
 
-        for(int i = 0; i < Width; ++i)
-            for(int j = 0; j < Height; ++j)
-                if(Creatures[i, j] != null && Creatures[i, j].GetComponent<CreatureData>().team != team)
+        CreatureData creatureData =
+            creature.GetComponent<CreatureData>();
+
+        int team = creatureData.team;
+        int attackRange = creatureData.AttackRange;
+
+        // =========================
+        // 1. Găsim cel mai apropiat inamic
+        // =========================
+
+        int minEnemyDistance = int.MaxValue;
+        Vector3Int enemyPosition =
+            new Vector3Int(x, y, 0);
+
+        bool enemyFound = false;
+
+        for (int i = 0; i < Width; i++)
+        {
+            for (int j = 0; j < Height; j++)
+            {
+                GameObject other = Creatures[i, j];
+
+                if (other == null)
+                    continue;
+
+                CreatureData otherData =
+                    other.GetComponent<CreatureData>();
+
+                if (otherData.team == team)
+                    continue;
+
+                int distance =
+                    getLinfDistance(x, y, i, j);
+
+                if (distance < minEnemyDistance)
                 {
-                    if(getLinfDistance(x, y, i, j) < min_dist)
-                    {
-                        min_dist = getLinfDistance(x, y, i, j);
-                        min_pos = new Vector3Int(i, j, 0);
-                    }
-                }
-        
-        if (min_dist <= attackRange) return new Vector3Int(x, y, 0);
+                    minEnemyDistance = distance;
+                    enemyPosition =
+                        new Vector3Int(i, j, 0);
 
-        return min_pos;
+                    enemyFound = true;
+                }
+            }
+        }
+
+        if (!enemyFound)
+            return new Vector3Int(x, y, 0);
+
+        // Suntem deja suficient de aproape ca să atacăm.
+        if (minEnemyDistance <= attackRange)
+            return new Vector3Int(x, y, 0);
+
+        // =========================
+        // 2. Căutăm celulele din jurul inamicului
+        // =========================
+
+        Vector3Int bestFreeCell = enemyPosition;
+        int bestFreeDistance = int.MaxValue;
+        bool foundFreeCell = false;
+
+        // Aceasta este poziția pe care am fi vrut-o
+        // dacă am ignora faptul că e ocupată.
+        // O folosim ca fallback când TOATE sunt ocupate.
+        Vector3Int preferredBlockedCell = enemyPosition;
+        int preferredBlockedDistance = int.MaxValue;
+        bool foundAnyNeighbour = false;
+
+        for (int dx = -1; dx <= 1; dx++)
+        {
+            for (int dy = -1; dy <= 1; dy++)
+            {
+                if (dx == 0 && dy == 0)
+                    continue;
+
+                Vector3Int candidate =
+                    enemyPosition +
+                    new Vector3Int(dx, dy, 0);
+
+                // În afara gridului
+                if (!IsInsideBounds(
+                        candidate.x,
+                        candidate.y))
+                {
+                    continue;
+                }
+
+                // Nu există tile acolo
+                if (!TerrainTM.tilemap.HasTile(candidate))
+                    continue;
+
+                int distanceFromCreature =
+                    getDistance(
+                        x,
+                        y,
+                        candidate.x,
+                        candidate.y
+                    );
+
+                // =========================
+                // 3. Reținem poziția ideală,
+                // chiar dacă este ocupată.
+                // =========================
+
+                if (distanceFromCreature <
+                    preferredBlockedDistance)
+                {
+                    preferredBlockedDistance =
+                        distanceFromCreature;
+
+                    preferredBlockedCell =
+                        candidate;
+
+                    foundAnyNeighbour = true;
+                }
+
+                // =========================
+                // 4. Verificăm dacă este liberă
+                // =========================
+
+                GameObject occupant =
+                    Creatures[candidate.x, candidate.y];
+
+                GameObject reservation =
+                    Reservations[candidate.x, candidate.y];
+
+                bool occupied =
+                    occupant != null &&
+                    occupant != creature;
+
+                bool reserved =
+                    reservation != null &&
+                    reservation != creature;
+
+                bool alreadyClaimed =
+                    claimedApproachCells.Contains(candidate);
+
+                if (occupied ||
+                    reserved ||
+                    alreadyClaimed)
+                {
+                    continue;
+                }
+
+                // Dintre cele libere o alegem
+                // pe cea mai apropiată de noi.
+                if (distanceFromCreature <
+                    bestFreeDistance)
+                {
+                    bestFreeDistance =
+                        distanceFromCreature;
+
+                    bestFreeCell =
+                        candidate;
+
+                    foundFreeCell = true;
+                }
+            }
+        }
+
+        // =========================
+        // 5. Avem o celulă liberă
+        // =========================
+
+        if (foundFreeCell)
+        {
+            claimedApproachCells.Add(bestFreeCell);
+
+            return bestFreeCell;
+        }
+
+        // =========================
+        // 6. Toate sunt ocupate
+        // =========================
+        //
+        // Alegem poziția ideală chiar dacă e ocupată.
+        // Creatura va merge spre ea și va rămâne
+        // în spatele coechipierului până se eliberează.
+        if (foundAnyNeighbour)
+            return preferredBlockedCell;
+
+        // Caz extrem: inamicul nu are absolut
+        // niciun tile valid în jur.
+        return enemyPosition;
     }
 
     // apeleaza attackNearestEnemy pentru fiecare monstru

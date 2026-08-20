@@ -348,21 +348,56 @@ public class CreatureMovement : MonoBehaviour
     // ==============================
 
     bool IsWalkable(
-        Vector3Int cell,
-        Vector3Int target)
+    Vector3Int cell,
+    Vector3Int target)
     {
-        // Permitem întotdeauna celula țintă
-        if (cell == target)
-            return true;
+        // Trebuie să fie în grid.
+        if (!creaturesGrid.IsInsideBounds(
+                cell.x,
+                cell.y))
+        {
+            return false;
+        }
 
-        // Trebuie să existe ground
+        // Trebuie să existe ground.
         if (!groundTilemap.HasTile(cell))
             return false;
 
-        // Nu trebuie să existe obstacol
-        //if (obstacleTilemap != null &&
-            //obstacleTilemap.HasTile(cell))
-            //return false;
+        // Dacă aceasta este ținta finală,
+        // o permitem chiar dacă este ocupată.
+        //
+        // Este important pentru cazul în care
+        // toate pozițiile din jurul inamicului
+        // sunt ocupate: creatura poate calcula
+        // drumul până la coechipier și apoi
+        // TryReserveCell o va opri înainte
+        // să intre peste el.
+        if (cell == target)
+            return true;
+
+        GameObject occupant =
+            creaturesGrid.Creatures[
+                cell.x,
+                cell.y
+            ];
+
+        if (occupant != null &&
+            occupant != gameObject)
+        {
+            return false;
+        }
+
+        GameObject reservation =
+            creaturesGrid.Reservations[
+                cell.x,
+                cell.y
+            ];
+
+        if (reservation != null &&
+            reservation != gameObject)
+        {
+            return false;
+        }
 
         return true;
     }
