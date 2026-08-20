@@ -1,4 +1,5 @@
 using System;
+using NUnit.Framework.Internal;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.Rendering;
@@ -21,9 +22,11 @@ public class CreaturesGrid : MonoBehaviour
     private bool dragging;
     private Vector2Int dragStart;
     public GameObject[,] Reservations;
+    private Timer ConsoleTimer;
 
     private void Awake()
     {
+        ConsoleTimer = GameObject.FindGameObjectWithTag("GameConsole").GetComponent<Timer>();
         TerrainTM = GameObject.FindWithTag("TerrainTilemap")
             .GetComponent<TerrainTilemap>();
 
@@ -162,7 +165,18 @@ public class CreaturesGrid : MonoBehaviour
             attackTick();
             removeDeadCreatures();
             tick_timer = tick_length;
+
+            if(getCreatureCount(0) == 0 || getCreatureCount(1) == 0) ConsoleTimer.SkipTimer();
         }
+    }
+
+    public int getCreatureCount(int team)
+    {
+        int total = 0;
+        for(int i = 0; i < Width; i++)
+            for(int j = 0; j < Height; j++)
+                if(Creatures[i, j] != null && Creatures[i, j].GetComponent<CreatureData>().team == team) total++;
+        return total;
     }
 
     public void Swap(int x1, int y1, int x2, int y2)
