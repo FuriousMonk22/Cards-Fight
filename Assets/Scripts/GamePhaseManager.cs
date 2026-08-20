@@ -9,6 +9,8 @@ public enum GamePhase
 public class GamePhaseManager : MonoBehaviour
 {
     public static GamePhaseManager Instance { get; private set; }
+    
+    [SerializeField] private GameObject TimerSkipInstance;
 
     [Header("References")]
     [SerializeField] private Timer timer;
@@ -75,6 +77,8 @@ public class GamePhaseManager : MonoBehaviour
     {
         Debug.Log("===== PREPARATION START =====");
 
+        TimerSkipInstance.SetActive(true);
+
         CurrentPhase = GamePhase.Preparation;
 
         creaturesGrid.StopCombat();
@@ -85,6 +89,8 @@ public class GamePhaseManager : MonoBehaviour
     private void StartCombat()
     {
         Debug.Log("===== COMBAT START =====");
+
+        TimerSkipInstance.SetActive(false);
 
         CurrentPhase = GamePhase.Combat;
 

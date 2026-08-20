@@ -21,7 +21,8 @@ public class Timer : MonoBehaviour
     [SerializeField] private float pulseSpeed = 5f;
     [SerializeField] private float pulseAmount = 0.15f;
 
-    private float timeRemaining;
+
+    public float timeRemaining;
     private bool running;
 
     private Vector3 originalTextScale;
@@ -131,6 +132,21 @@ public class Timer : MonoBehaviour
         timeRemaining = duration;
         timerSlider.value = duration;
     }
+
+    public void SkipTimer()
+    {
+        timeRemaining = 0f;
+        running = false;
+
+        timerSlider.value = 0f;
+        timerText.text = "00:00";
+
+        timerText.color = warningColor;
+        timerText.transform.localScale = originalTextScale;
+
+        TimerFinished();
+    }
+
 
     private void TimerFinished()
     {
