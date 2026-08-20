@@ -1,10 +1,10 @@
 using UnityEngine;
-using TMPro;
 
 [System.Serializable]
 public class CreatureData : MonoBehaviour
 {
     private const string CreaturePath = "Creatures/";
+    private const string HealthbarPath = "Healthbar";
 
     public string Name;
     public Sprite Sprite;
@@ -25,55 +25,70 @@ public class CreatureData : MonoBehaviour
 
     public CreatureArchetype Class;
 
-    private TextMeshPro healthText;
+    private int maxHealth;
+    private HealthBar healthBar;
 
     void Start()
     {
-        CreateHealthText();
+        maxHealth = Health;
+        AttachHealthbar();
     }
 
-    private void CreateHealthText()
+    private void AttachHealthbar()
     {
-        GameObject textObject = new GameObject("HealthText");
+        GameObject healthbarPrefab = Resources.Load<GameObject>(HealthbarPath);
 
-        textObject.transform.SetParent(transform);
-        textObject.transform.localPosition = new Vector3(0f, 0f, 0f);
+        if (healthbarPrefab == null)
+        {
+            Debug.LogError("Could not find healthbar at Resources/Healthbar");
+            return;
+        }
 
-        healthText = textObject.AddComponent<TextMeshPro>();
+        // Add the healthbar to the game as a child of the creature.
+        GameObject healthbarObject = Instantiate(healthbarPrefab, transform);
 
-        healthText.text = Health.ToString();
-        healthText.fontSize = 10;
-        healthText.alignment = TextAlignmentOptions.Center;
+        // Position it 10 pixels lower relative to the creature.
+        healthbarObject.transform.localPosition = new Vector3(0f, -0.55f, 0f);
 
-        healthText.rectTransform.pivot = new Vector2(0.5f, 0.5f);
+        // Get the HealthBar component.
+        healthBar = healthbarObject.GetComponent<HealthBar>();
 
-        healthText.color = Color.red;
+        if (healthBar == null)
+        {
+            Debug.LogError("Healthbar prefab does not have a HealthBar component.");
+            return;
+        }
 
-        healthText.renderer.sortingOrder = 100;
+        // Initialize the healthbar.
+        healthBar.SetHealth(Health, maxHealth);
     }
 
     public void TakeDamage(int damage)
     {
         Health -= damage;
+        Health = Mathf.Max(Health, 0);
 
-        if (Health < 0)
-            Health = 0;
-
-        UpdateHealthText();
-    }
-
-    private void UpdateHealthText()
-    {
-        if (healthText != null)
+        if (healthBar != null)
         {
-            healthText.text = Health.ToString();
+            healthBar.SetHealth(Health, maxHealth);
         }
     }
 
     public static CreatureData Load(string creatureName)
     {
-        return Resources.Load<GameObject>(CreaturePath + creatureName)
-            .GetComponent<CreatureData>();
+        GameObject prefab =
+            Resources.Load<GameObject>(CreaturePath + creatureName);
+
+        if (prefab == null)
+        {
+            Debug.LogError(
+                $"Could not find creature at Resources/{CreaturePath}{creatureName}"
+            );
+
+            return null;
+        }
+
+        return prefab.GetComponent<CreatureData>();
     }
 }
 
