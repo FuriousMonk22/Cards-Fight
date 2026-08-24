@@ -16,7 +16,7 @@ public class CreaturesGrid : MonoBehaviour
     public float CellSize = 1f;
 
     public float tick_timer = 0f;
-    private float tick_length = 0.5f; 
+    private float tick_length = 0.5f;
 
     public GameObject[,] Creatures;
     private bool dragging;
@@ -160,22 +160,22 @@ public class CreaturesGrid : MonoBehaviour
     public void Tick()
     {
         tick_timer -= Time.deltaTime;
-        if(tick_timer < 0)
+        if (tick_timer < 0)
         {
             attackTick();
             removeDeadCreatures();
             tick_timer = tick_length;
 
-            if(getCreatureCount(0) == 0 || getCreatureCount(1) == 0) ConsoleTimer.SkipTimer();
+            if (getCreatureCount(0) == 0 || getCreatureCount(1) == 0) ConsoleTimer.SkipTimer();
         }
     }
 
     public int getCreatureCount(int team)
     {
         int total = 0;
-        for(int i = 0; i < Width; i++)
-            for(int j = 0; j < Height; j++)
-                if(Creatures[i, j] != null && Creatures[i, j].GetComponent<CreatureData>().team == team) total++;
+        for (int i = 0; i < Width; i++)
+            for (int j = 0; j < Height; j++)
+                if (Creatures[i, j] != null && Creatures[i, j].GetComponent<CreatureData>().team == team) total++;
         return total;
     }
 
@@ -199,18 +199,20 @@ public class CreaturesGrid : MonoBehaviour
         Creatures[x1, y1] = Creatures[x2, y2];
         Creatures[x2, y2] = temp;
 
-        if (Creatures[x1, y1] != null) {
+        if (Creatures[x1, y1] != null)
+        {
             Creatures[x1, y1].transform.position = TerrainTM.GetWorldPosition(new Vector3Int(x1, y1, 0));
             Creatures[x1, y1].GetComponent<CreatureMovement>().currentCell = new Vector3Int(x1, y1, 0);
             Creatures[x1, y1].GetComponent<CreatureMovement>().RestartPath();
         }
 
-        if (Creatures[x2, y2] != null) {
+        if (Creatures[x2, y2] != null)
+        {
             Creatures[x2, y2].transform.position = TerrainTM.GetWorldPosition(new Vector3Int(x2, y2, 0));
             Creatures[x2, y2].GetComponent<CreatureMovement>().currentCell = new Vector3Int(x2, y2, 0);
             Creatures[x2, y2].GetComponent<CreatureMovement>().RestartPath();
         }
-        
+
         Debug.Log($"Swapped ({x1}, {y1}) with ({x2}, {y2})");
         UpdateCreaturesPath();
     }
@@ -247,11 +249,13 @@ public class CreaturesGrid : MonoBehaviour
 
         Debug.Log("Spawning" + creatureName);
 
-        if (Creatures == null){
+        if (Creatures == null)
+        {
             Debug.Log("Failed to add creature, creature grid uninitialized.");
             return false;
         }
-        if (IsOccupied(x, y)) {
+        if (IsOccupied(x, y))
+        {
             return false;
         }
 
@@ -301,11 +305,13 @@ public class CreaturesGrid : MonoBehaviour
         }
 
         // Tint based on Y position
-        if (y < Height / 2.0) {
+        if (y < Height / 2.0)
+        {
             renderer.color = new Color(1f, 0.3f, 0.4f);
             creature.team = 1;
         }
-        else {
+        else
+        {
             renderer.color = new Color(0.3f, 0.3f, 1f);
             creature.team = 0;
         }
@@ -501,11 +507,14 @@ public class CreaturesGrid : MonoBehaviour
                 if (enemyData.team == team)
                     continue;
 
+                int attackRange =
+                    Mathf.Max(0, creatureData.AttackRange);
+
                 if (getLinfDistance(
                         x,
                         y,
                         enemyX,
-                        enemyY) <= 1)
+                        enemyY) <= attackRange)
                 {
                     return start;
                 }
@@ -571,11 +580,25 @@ public class CreaturesGrid : MonoBehaviour
                 bool foundBlockedCell =
                     false;
 
-                // Cele 8 celule din jurul adversarului.
-                for (int dx = -1; dx <= 1; dx++)
+                // Orice celulă aflată în AttackRange față de adversar
+                // este o poziție validă de atac.
+                // Folosim distanța L-infinity, la fel ca la atac:
+                // AttackRange = 1 -> box 3x3
+                // AttackRange = 2 -> box 5x5
+                // etc.
+                int attackRange =
+                    Mathf.Max(0, creatureData.AttackRange);
+
+                for (int dx = -attackRange;
+                     dx <= attackRange;
+                     dx++)
                 {
-                    for (int dy = -1; dy <= 1; dy++)
+                    for (int dy = -attackRange;
+                         dy <= attackRange;
+                         dy++)
                     {
+                        // Celula adversarului este ocupată chiar de el,
+                        // deci nu poate fi destinație de movement.
                         if (dx == 0 && dy == 0)
                             continue;
 
@@ -781,34 +804,95 @@ public class CreaturesGrid : MonoBehaviour
 
     // apeleaza attackNearestEnemy pentru fiecare monstru
     public void attackTick()
-        {
-            for(int i=0; i<Width; i++)
-                for(int j=0; j<Height; j++)
-                    if(Creatures[i,j] != null)
-                        attackNearestEnemy(i, j);
-        }
+    {
+        for (int i = 0; i < Width; i++)
+            for (int j = 0; j < Height; j++)
+                if (Creatures[i, j] != null)
+                    attackNearestEnemy(i, j);
+    }
 
-// verifica intr-un box 3x3 daca exista un inamic si ataca (todo: adapteaza dupa range-ul creature-ului)
+    // Caută cel mai apropiat inamic aflat în AttackRange și îl atacă.
+    // Range-ul folosește distanța L-infinity:
+    // 1 = box 3x3, 2 = box 5x5, 3 = box 7x7 etc.
     public void attackNearestEnemy(int x, int y)
     {
-        if(Creatures[x, y] == null) return;
+        GameObject attacker = Creatures[x, y];
 
-        for(int i = -1; i < 2; i++)
-            for(int j = -1; j < 2; j++)
+        if (attacker == null)
+            return;
+
+        CreatureData attackingCreature =
+            attacker.GetComponent<CreatureData>();
+
+        if (attackingCreature == null)
+            return;
+
+        int attackRange =
+            Mathf.Max(0, attackingCreature.AttackRange);
+
+        GameObject nearestEnemy = null;
+        int nearestDistance = int.MaxValue;
+
+        for (int dx = -attackRange;
+             dx <= attackRange;
+             dx++)
+        {
+            for (int dy = -attackRange;
+                 dy <= attackRange;
+                 dy++)
             {
-                int x2 = x + i;
-                int y2 = y + j;
-                if(IsInsideBounds(x2, y2) && (x2 != x || y2 != y) && Creatures[x2, y2] != null)
+                if (dx == 0 && dy == 0)
+                    continue;
+
+                int enemyX = x + dx;
+                int enemyY = y + dy;
+
+                if (!IsInsideBounds(enemyX, enemyY))
+                    continue;
+
+                GameObject possibleEnemy =
+                    Creatures[enemyX, enemyY];
+
+                if (possibleEnemy == null)
+                    continue;
+
+                CreatureData enemyData =
+                    possibleEnemy.GetComponent<CreatureData>();
+
+                if (enemyData == null ||
+                    enemyData.team == attackingCreature.team)
                 {
-                    CreatureData attacking_creature = Creatures[x, y].GetComponent<CreatureData>();
-                    CreatureData damaged_creature = Creatures[x2, y2].GetComponent<CreatureData>();
+                    continue;
+                }
 
-                    if(attacking_creature.team == damaged_creature.team) continue;
+                int distance =
+                    getLinfDistance(
+                        x,
+                        y,
+                        enemyX,
+                        enemyY
+                    );
 
-                    damaged_creature.TakeDamage(attacking_creature.Attack);
-                    return;
+                if (distance > attackRange)
+                    continue;
+
+                if (distance < nearestDistance)
+                {
+                    nearestDistance = distance;
+                    nearestEnemy = possibleEnemy;
                 }
             }
+        }
+
+        if (nearestEnemy == null)
+            return;
+
+        CreatureData damagedCreature =
+            nearestEnemy.GetComponent<CreatureData>();
+
+        damagedCreature.TakeDamage(
+            attackingCreature.Attack
+        );
     }
 
     public void removeDeadCreatures()

@@ -249,48 +249,36 @@ public class CreatureMovement : MonoBehaviour
     }
 
     // ==============================
-    // A*
+    // BFS
     // ==============================
     List<Vector3Int> FindPath(
     Vector3Int start,
     Vector3Int target)
     {
-        List<Vector3Int> openList =
-            new List<Vector3Int>();
+        Queue<Vector3Int> queue =
+            new Queue<Vector3Int>();
 
-        HashSet<Vector3Int> closedList =
+        HashSet<Vector3Int> visited =
             new HashSet<Vector3Int>();
 
         Dictionary<Vector3Int, Vector3Int> cameFrom =
             new Dictionary<Vector3Int, Vector3Int>();
 
-        Dictionary<Vector3Int, int> gCost =
-            new Dictionary<Vector3Int, int>();
-
-        openList.Add(start);
-        gCost[start] = 0;
+        queue.Enqueue(start);
+        visited.Add(start);
 
         // Dacă target-ul este imposibil de atins,
-        // vom ține minte cea mai apropiată
-        // celulă la care chiar putem ajunge.
+        // păstrăm cea mai apropiată celulă accesibilă
+        // de target dintre cele găsite de BFS.
         Vector3Int closestReachableCell = start;
 
         int closestDistance =
             ManhattanDistance(start, target);
 
-        while (openList.Count > 0)
+        while (queue.Count > 0)
         {
             Vector3Int current =
-                GetLowestFCost(
-                    openList,
-                    gCost,
-                    target
-                );
-
-            // ==========================
-            // Reținem cea mai apropiată
-            // poziție accesibilă de target.
-            // ==========================
+                queue.Dequeue();
 
             int distanceToTarget =
                 ManhattanDistance(
@@ -298,8 +286,7 @@ public class CreatureMovement : MonoBehaviour
                     target
                 );
 
-            if (distanceToTarget <
-                closestDistance)
+            if (distanceToTarget < closestDistance)
             {
                 closestDistance =
                     distanceToTarget;
@@ -308,7 +295,9 @@ public class CreatureMovement : MonoBehaviour
                     current;
             }
 
-            // Target-ul chiar este accesibil.
+            // BFS garantează că prima dată când
+            // ajungem la target avem un drum cu
+            // număr minim de pași.
             if (current == target)
             {
                 return ReconstructPath(
@@ -318,22 +307,21 @@ public class CreatureMovement : MonoBehaviour
                 );
             }
 
-            openList.Remove(current);
-            closedList.Add(current);
-
             List<Vector3Int> neighbours =
                 GetNeighbours(current);
 
+            // Păstrăm variația dintre drumurile
+            // echivalente ca lungime.
             Shuffle(neighbours);
 
             foreach (Vector3Int neighbour
                      in neighbours)
             {
-                if (closedList.Contains(neighbour))
+                if (visited.Contains(neighbour))
                     continue;
 
-                // AICI terenul funcționează
-                // efectiv ca un perete.
+                // Terenul imposibil de traversat
+                // funcționează ca un perete.
                 if (!IsWalkable(
                         neighbour,
                         target))
@@ -341,24 +329,12 @@ public class CreatureMovement : MonoBehaviour
                     continue;
                 }
 
-                int tentativeGCost =
-                    gCost[current] + 1;
+                visited.Add(neighbour);
 
-                if (!gCost.ContainsKey(neighbour) ||
-                    tentativeGCost <
-                    gCost[neighbour])
-                {
-                    cameFrom[neighbour] =
-                        current;
+                cameFrom[neighbour] =
+                    current;
 
-                    gCost[neighbour] =
-                        tentativeGCost;
-
-                    if (!openList.Contains(neighbour))
-                    {
-                        openList.Add(neighbour);
-                    }
-                }
+                queue.Enqueue(neighbour);
             }
         }
 
@@ -366,8 +342,9 @@ public class CreatureMovement : MonoBehaviour
         // TARGET IMPOSIBIL
         // ==========================
 
-        // N-am ajuns la target, dar am găsit
-        // o celulă accesibilă mai aproape de el.
+        // Dacă target-ul nu poate fi atins,
+        // mergem până la cea mai apropiată
+        // poziție accesibilă găsită.
         if (closestReachableCell != start)
         {
             return ReconstructPath(
@@ -377,8 +354,6 @@ public class CreatureMovement : MonoBehaviour
             );
         }
 
-        // Nu există nici măcar o celulă
-        // accesibilă mai aproape.
         return null;
     }
 
@@ -432,37 +407,6 @@ public class CreatureMovement : MonoBehaviour
         }
 
         return true;
-    }
-
-    // ==============================
-    // F cost
-    // ==============================
-
-    Vector3Int GetLowestFCost(
-        List<Vector3Int> openList,
-        Dictionary<Vector3Int, int> gCost,
-        Vector3Int target)
-    {
-        Vector3Int bestCell = openList[0];
-
-        int bestF =
-            gCost[bestCell] +
-            ManhattanDistance(bestCell, target);
-
-        foreach (Vector3Int cell in openList)
-        {
-            int f =
-                gCost[cell] +
-                ManhattanDistance(cell, target);
-
-            if (f < bestF)
-            {
-                bestF = f;
-                bestCell = cell;
-            }
-        }
-
-        return bestCell;
     }
 
     // ==============================

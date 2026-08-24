@@ -58,7 +58,7 @@ MonoBehaviour:
   DodgeChance: 10
   CooldownMove: 1
   CooldownAttack: 1
-  AttackRange: 1
+  AttackRange: 3
   Class: 0
 --- !u!114 &7927519697314070547
 MonoBehaviour:
