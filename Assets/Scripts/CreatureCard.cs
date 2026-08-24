@@ -21,12 +21,14 @@ public class CreatureCard : MonoBehaviour, IPointerDownHandler, IPointerUpHandle
     private CreaturesGrid grid;
     private Tilemap tilemap;
     private LineRenderer line;
+    private RectTransform rect;
 
     private bool dragging;
     private Vector3 cardWorldPosition;
 
     private void Awake()
     {
+        rect = GetComponent<RectTransform>();
         grid = GameObject.FindGameObjectWithTag("CreaturesGrid").GetComponent<CreaturesGrid>();
         tilemap = GameObject.FindGameObjectWithTag("TerrainTilemap").GetComponent<Tilemap>();
 
@@ -37,6 +39,7 @@ public class CreatureCard : MonoBehaviour, IPointerDownHandler, IPointerUpHandle
 
     private void Start()
     {
+        rect.localPosition = rect.localPosition + Vector3.up * 50f;
         CreatureData data = CreatureData.Load(creatureName);
 
         if (data == null)
@@ -81,6 +84,11 @@ public class CreatureCard : MonoBehaviour, IPointerDownHandler, IPointerUpHandle
         line.enabled = true;
         line.SetPosition(0, cardWorldPosition);
         line.SetPosition(1, tilemap.GetCellCenterWorld(cell));
+    }
+
+    public void SetCreature(string name)
+    {
+        creatureName = name;
     }
 
     public void OnPointerDown(PointerEventData eventData)
@@ -129,6 +137,7 @@ public class CreatureCard : MonoBehaviour, IPointerDownHandler, IPointerUpHandle
         Vector3Int cell = tilemap.WorldToCell(worldPosition);
 
         if (grid.IsInsideBounds(cell.x, cell.y))
-            grid.Spawn(creatureName, cell.x, cell.y);
+            if (grid.Spawn(creatureName, cell.x, cell.y))
+                transform.parent.GetComponent<CardHolder>().Consume();
     }
 }
