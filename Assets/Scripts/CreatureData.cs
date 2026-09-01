@@ -17,8 +17,7 @@ public class CreatureData : MonoBehaviour
     public int Shield;
     public float CriticalChance;
     public float DodgeChance;
-    public float CooldownMove;
-    public float CooldownAttack;
+    public int CooldownAction;
     public int AttackRange;
 
     public CreatureArchetype Class;

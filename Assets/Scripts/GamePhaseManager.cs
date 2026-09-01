@@ -38,20 +38,7 @@ public class GamePhaseManager : MonoBehaviour
 
     private void Start()
     {
-        if (timer == null)
-        {
-            Debug.LogError("GamePhaseManager: Timer is NOT assigned!");
-            return;
-        }
-
-        if (creaturesGrid == null)
-        {
-            Debug.LogError("GamePhaseManager: CreaturesGrid is NOT assigned!");
-            return;
-        }
-
         timer.OnTimerFinished += OnTimerFinished;
-
         StartPreparation();
     }
 
@@ -81,8 +68,6 @@ public class GamePhaseManager : MonoBehaviour
 
         CurrentPhase = GamePhase.Preparation;
 
-        creaturesGrid.StopCombat();
-
         timer.StartTimer(preparationDuration);
     }
 
@@ -93,8 +78,6 @@ public class GamePhaseManager : MonoBehaviour
         TimerSkipInstance.SetActive(false);
 
         CurrentPhase = GamePhase.Combat;
-
-        creaturesGrid.StartCombat();
 
         timer.StartTimer(combatDuration);
     }

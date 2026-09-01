@@ -53,7 +53,7 @@ public class CreatureCard : MonoBehaviour, IPointerDownHandler, IPointerUpHandle
         ability.text = "No Ability";
         damage.text = "STR\n" + data.Attack;
         defense.text = "DEF\n" + data.Shield;
-        speed.text = "SPD\n" + data.CooldownMove;
+        speed.text = "SPD\n" + data.CooldownAction;
     }
 
     private void Update()
