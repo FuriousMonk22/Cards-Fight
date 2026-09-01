@@ -47,7 +47,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CreatureData
   Name: Template
   Sprite: {fileID: 21300000, guid: 575536c3d1c3ce6cba3d8d01bfcf3ce1, type: 3}
-  team: 0
   canSwim: 0
   canWalk: 1
   canFly: 0
@@ -58,7 +57,7 @@ MonoBehaviour:
   DodgeChance: 10
   CooldownMove: 1
   CooldownAttack: 1
-  AttackRange: 3
+  AttackRange: 2
   Class: 0
 --- !u!114 &7927519697314070547
 MonoBehaviour:

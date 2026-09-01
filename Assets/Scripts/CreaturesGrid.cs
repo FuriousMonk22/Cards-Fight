@@ -175,7 +175,7 @@ public class CreaturesGrid : MonoBehaviour
         int total = 0;
         for (int i = 0; i < Width; i++)
             for (int j = 0; j < Height; j++)
-                if (Creatures[i, j] != null && Creatures[i, j].GetComponent<CreatureData>().team == team) total++;
+                if (Creatures[i, j] != null && Creatures[i, j].GetComponent<Creature>().team == team) total++;
         return total;
     }
 
@@ -219,104 +219,47 @@ public class CreaturesGrid : MonoBehaviour
 
     public bool Spawn(string creatureName, int x, int y)
     {
-        Debug.Log(
-        $"Trying Spawn {creatureName} at {x},{y}. " +
-        $"Phase = {GamePhaseManager.Instance?.CurrentPhase}"
-    );
-
         if (GamePhaseManager.Instance != null &&
             !GamePhaseManager.Instance.CanPlaceCreatures)
-        {
-            Debug.LogWarning(
-                $"SPAWN BLOCKED! Current phase: " +
-                $"{GamePhaseManager.Instance.CurrentPhase}"
-            );
+            return false;
 
+        if (Creatures == null || IsOccupied(x, y))
+            return false;
+
+        CreatureData data = CreatureData.Load(creatureName);
+
+        if (data == null)
+        {
+            Debug.LogError($"CreatureData '{creatureName}' not found.");
             return false;
         }
-
-        if (Creatures == null)
-        {
-            Debug.LogError("Creatures array is NULL!");
-            return false;
-        }
-
-        if (IsOccupied(x, y))
-        {
-            Debug.LogWarning($"Cell {x},{y} is occupied!");
-            return false;
-        }
-
-        Debug.Log("Spawning" + creatureName);
-
-        if (Creatures == null)
-        {
-            Debug.Log("Failed to add creature, creature grid uninitialized.");
-            return false;
-        }
-        if (IsOccupied(x, y))
-        {
-            return false;
-        }
-
-        GameObject prefab = Resources.Load<GameObject>(CreaturePrefabPath + creatureName);
-
-        if (prefab == null)
-        {
-            Debug.LogError($"Creature prefab '{creatureName}' not found.");
-            return false;
-        }
-
-        GameObject go = Instantiate(prefab, transform);
 
         Vector3Int spawnCell = new Vector3Int(x, y, 0);
 
-        Creatures[x, y] = go;
-
+        GameObject go = new GameObject(creatureName);
+        go.transform.SetParent(transform);
         go.transform.position =
             GridManager.Instance.GroundTilemap.GetCellCenterWorld(spawnCell);
 
-        CreatureMovement movement =
-            go.GetComponent<CreatureMovement>();
+        Creature creature = go.AddComponent<Creature>();
+        creature.Initialize(data);
 
-        if (movement != null)
+        creature.team = y < Height / 2.0 ? 1 : 0;
+
+        if (creature.TryGetComponent<SpriteRenderer>(out SpriteRenderer renderer))
         {
-            movement.Initialize(this, spawnCell);
-        }
-        else
-        {
-            Debug.LogError("Prefab-ul nu are CreatureMovement!");
-        }
-
-        CreatureData creature =
-            go.GetComponent<CreatureData>();
-
-        // Sprite
-        SpriteRenderer renderer =
-            go.GetComponent<SpriteRenderer>();
-
-        if (renderer == null)
-            renderer = go.AddComponent<SpriteRenderer>();
-
-        if (creature.Sprite != null)
-        {
-            renderer.sprite = creature.Sprite;
-            renderer.sortingOrder = 1;
+            renderer.color = creature.team == 1
+                ? new Color(1f, 0.3f, 0.4f)
+                : new Color(0.3f, 0.3f, 1f);
         }
 
-        // Tint based on Y position
-        if (y < Height / 2.0)
-        {
-            renderer.color = new Color(1f, 0.3f, 0.4f);
-            creature.team = 1;
-        }
-        else
-        {
-            renderer.color = new Color(0.3f, 0.3f, 1f);
-            creature.team = 0;
-        }
+        Creatures[x, y] = go;
+
+        CreatureMovement movement = go.AddComponent<CreatureMovement>();
+        movement.Initialize(this, spawnCell);
 
         UpdateCreaturesPath();
+
         return true;
     }
 
@@ -400,8 +343,9 @@ public class CreaturesGrid : MonoBehaviour
     private int GetTerrainPathDistance(
     Vector3Int start,
     Vector3Int target,
-    CreatureData creatureData)
+    Creature creature)
     {
+        CreatureData creatureData = creature.creatureData;
         if (start == target)
             return 0;
 
@@ -475,16 +419,14 @@ public class CreaturesGrid : MonoBehaviour
     int y,
     HashSet<Vector3Int> claimedApproachCells)
     {
-        GameObject creature =
-            Creatures[x, y];
+        GameObject creatureGO = Creatures[x, y];
 
-        if (creature == null)
+        if (creatureGO == null)
             return new Vector3Int(x, y, 0);
 
-        CreatureData creatureData =
-            creature.GetComponent<CreatureData>();
+        Creature creature = creatureGO.GetComponent<Creature>();
 
-        int team = creatureData.team;
+        int team = creature.team;
 
         Vector3Int start =
             new Vector3Int(x, y, 0);
@@ -501,14 +443,14 @@ public class CreaturesGrid : MonoBehaviour
                 if (enemy == null)
                     continue;
 
-                CreatureData enemyData =
-                    enemy.GetComponent<CreatureData>();
+                Creature enemyData =
+                    enemy.GetComponent<Creature>();
 
                 if (enemyData.team == team)
                     continue;
 
                 int attackRange =
-                    Mathf.Max(0, creatureData.AttackRange);
+                    Mathf.Max(0, creature.creatureData.AttackRange);
 
                 if (getLinfDistance(
                         x,
@@ -534,17 +476,13 @@ public class CreaturesGrid : MonoBehaviour
         {
             for (int enemyY = 0; enemyY < Height; enemyY++)
             {
-                GameObject enemy =
-                    Creatures[enemyX, enemyY];
+                GameObject enemy = Creatures[enemyX, enemyY];
 
-                if (enemy == null)
-                    continue;
+                if (enemy == null) continue;
 
-                CreatureData enemyData =
-                    enemy.GetComponent<CreatureData>();
+                Creature enemyData = enemy.GetComponent<Creature>();
 
-                if (enemyData.team == team)
-                    continue;
+                if (enemyData.team == team) continue;
 
                 Vector3Int enemyPosition =
                     new Vector3Int(
@@ -587,7 +525,7 @@ public class CreaturesGrid : MonoBehaviour
                 // AttackRange = 2 -> box 5x5
                 // etc.
                 int attackRange =
-                    Mathf.Max(0, creatureData.AttackRange);
+                    Mathf.Max(0, creature.creatureData.AttackRange);
 
                 for (int dx = -attackRange;
                      dx <= attackRange;
@@ -621,7 +559,7 @@ public class CreaturesGrid : MonoBehaviour
                         // pe care creatura noastră îl poate folosi.
                         if (!TerrainTM.CanCreatureTraverse(
                                 candidate,
-                                creatureData))
+                                creature.creatureData))
                         {
                             continue;
                         }
@@ -634,7 +572,7 @@ public class CreaturesGrid : MonoBehaviour
                             GetTerrainPathDistance(
                                 start,
                                 candidate,
-                                creatureData
+                                creature
                             );
 
                         // Nu există drum până acolo.
@@ -821,14 +759,14 @@ public class CreaturesGrid : MonoBehaviour
         if (attacker == null)
             return;
 
-        CreatureData attackingCreature =
-            attacker.GetComponent<CreatureData>();
+        Creature attackingCreature =
+            attacker.GetComponent<Creature>();
 
         if (attackingCreature == null)
             return;
 
         int attackRange =
-            Mathf.Max(0, attackingCreature.AttackRange);
+            Mathf.Max(0, attackingCreature.creatureData.AttackRange);
 
         GameObject nearestEnemy = null;
         int nearestDistance = int.MaxValue;
@@ -856,8 +794,8 @@ public class CreaturesGrid : MonoBehaviour
                 if (possibleEnemy == null)
                     continue;
 
-                CreatureData enemyData =
-                    possibleEnemy.GetComponent<CreatureData>();
+                Creature enemyData =
+                    possibleEnemy.GetComponent<Creature>();
 
                 if (enemyData == null ||
                     enemyData.team == attackingCreature.team)
@@ -884,15 +822,11 @@ public class CreaturesGrid : MonoBehaviour
             }
         }
 
-        if (nearestEnemy == null)
-            return;
+        if (nearestEnemy == null) return;
 
-        CreatureData damagedCreature =
-            nearestEnemy.GetComponent<CreatureData>();
+        Creature damagedCreature = nearestEnemy.GetComponent<Creature>();
 
-        damagedCreature.TakeDamage(
-            attackingCreature.Attack
-        );
+        damagedCreature.TakeDamage( attackingCreature.creatureData.Attack );
     }
 
     public void removeDeadCreatures()
@@ -905,16 +839,13 @@ public class CreaturesGrid : MonoBehaviour
             {
                 GameObject creature = Creatures[i, j];
 
-                if (creature == null)
-                    continue;
+                if (creature == null) continue;
 
-                CreatureData data =
-                    creature.GetComponent<CreatureData>();
+                Creature data = creature.GetComponent<Creature>();
 
-                if (data == null)
-                    continue;
+                if (data == null) continue;
 
-                if (data.Health <= 0)
+                if (data.getHealth() <= 0)
                 {
                     RemoveCreature(i, j);
 
