@@ -1,16 +1,18 @@
 using System;
 using UnityEngine;
 
+// Class that controls Creatures' behaviour and dynamic data
+
 // todo: create ability class and abilities array in this class
 
 public class Creature : MonoBehaviour
 {
     public CreatureData creatureData;
 
-    public Vector3Int cell;
+    public Vector3Int cell; // which cell  it's in, updated in CreaturesGrid, will break if not in sync with creaturesGrid.Creatures
     public int team;
-    private int healthValue;
-    private int cooldownRemaining;
+    private int healthValue; // current health
+    private int cooldownRemaining; // cooldown remaining for next action (Ability/Attack/Move)
 
     private HealthBar healthBar;
     private SpriteRenderer sprite;

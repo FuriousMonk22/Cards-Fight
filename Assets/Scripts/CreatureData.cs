@@ -1,5 +1,7 @@
 using UnityEngine;
 
+// Dataclass for creatures, has metadata and stats
+
 [System.Serializable]
 public class CreatureData : MonoBehaviour
 {

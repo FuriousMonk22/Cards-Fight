@@ -7,40 +7,34 @@ using System.Collections.Generic;
 using Unity.VisualScripting;
 using UnityEngine.Tilemaps;
 
+// Manages the spawning and position of creatures in the grid, also has utility functions
+
 public class CreaturesGrid : MonoBehaviour
 {
     private const string CreaturePrefabPath = "Creatures/";
 
-    TerrainTilemap TerrainTM;
+    TerrainTilemap TerrainTM; // reference to terrain, used for determining if creature can be placed/swapped to spot
 
-    public int Width = 3;
-    public int Height = 3;
-    public float CellSize = 1f;
-
-    public float tick_timer = 0f;
-    private float tick_length = 0.5f;
-
+    public int Width;
+    public int Height;
     public GameObject[,] Creatures;
+
     private bool dragging;
     private Vector2Int dragStart;
-    private Timer ConsoleTimer;
 
     private void Awake()
     {
-        ConsoleTimer = GameObject.FindGameObjectWithTag("GameConsole").GetComponent<Timer>();
         TerrainTM = GameObject.FindWithTag("TerrainTilemap").GetComponent<TerrainTilemap>();
-        
         Pathfinder.creaturesGrid = this;
-
-        InitializeGrid(10, 8);
-    }
-
-    void Start()
-    {
         InitializeGrid(10, 8);
     }
 
     private void Update()
+    {
+        ManageMouseDrag();
+    }
+
+    public void ManageMouseDrag()
     {
         if (!GamePhaseManager.Instance.CanPlaceCreatures)
         {
@@ -100,19 +94,19 @@ public class CreaturesGrid : MonoBehaviour
     {
         if (!IsInsideBounds(x, y) || Creatures[x, y] != null)
             return true; // Outside the grid = cannot be placed
-
-        return Creatures[x, y] != null;
+        return false;
     }
 
     public int getCreatureCount(int team)
     {
         int total = 0;
-        for (int i = 0; i < Width; i++)
-            for (int j = 0; j < Height; j++)
-                if (Creatures[i, j] != null && Creatures[i, j].GetComponent<Creature>().team == team) total++;
+        foreach (GameObject go in Creatures)
+            if (go != null && go.GetComponent<Creature>().team == team) total++;
         return total;
     }
 
+    // swaps positions (usually between a creature and an empty tile)
+    // can be forced even if IsInCombat by moving creatures
     public void Swap(int x1, int y1, int x2, int y2, bool force = false)
     {
         if (!GamePhaseManager.Instance.CanPlaceCreatures && !force)
@@ -155,6 +149,7 @@ public class CreaturesGrid : MonoBehaviour
         if (Creatures == null || IsOccupied(x, y))
             return false;
 
+
         CreatureData data = CreatureData.Load(creatureName);
 
         if (data == null)
@@ -163,12 +158,12 @@ public class CreaturesGrid : MonoBehaviour
             return false;
         }
 
-        Vector3Int spawnCell = new Vector3Int(x, y, 0);
-
+        // create Creature and allign to tilemap
         GameObject go = new GameObject(creatureName);
         go.transform.SetParent(transform);
 
         Tilemap tm = TerrainTM.GetComponent<Tilemap>();
+        Vector3Int spawnCell = new Vector3Int(x, y, 0);
         go.transform.position = tm.GetCellCenterWorld(spawnCell);
 
         Creature creature = go.AddComponent<Creature>();
