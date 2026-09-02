@@ -1,6 +1,6 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!1 &8752675122504914949
+--- !u!1 &6377952825726538802
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -8,9 +8,8 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 2984089770145671711}
-  - component: {fileID: 2369487272229294213}
-  - component: {fileID: 7927519697314070547}
+  - component: {fileID: 1286522397346506814}
+  - component: {fileID: -1196699252127751486}
   m_Layer: 0
   m_Name: Template
   m_TagString: Untagged
@@ -18,13 +17,13 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!4 &2984089770145671711
+--- !u!4 &1286522397346506814
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8752675122504914949}
+  m_GameObject: {fileID: 6377952825726538802}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
@@ -33,13 +32,13 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &2369487272229294213
+--- !u!114 &-1196699252127751486
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8752675122504914949}
+  m_GameObject: {fileID: 6377952825726538802}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 1c3c8a29fd6ca1150ab3a73662f4592b, type: 3}
@@ -47,7 +46,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CreatureData
   Name: Template
   Sprite: {fileID: 21300000, guid: 575536c3d1c3ce6cba3d8d01bfcf3ce1, type: 3}
-  team: 0
   canSwim: 0
   canWalk: 1
   canFly: 0
@@ -56,23 +54,6 @@ MonoBehaviour:
   Shield: 10
   CriticalChance: 10
   DodgeChance: 10
-  CooldownMove: 1
-  CooldownAttack: 1
-  AttackRange: 3
+  CooldownAction: 4
+  AttackRange: 2
   Class: 0
---- !u!114 &7927519697314070547
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8752675122504914949}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f0c66d20d25fb4447aef6a27ebc12504, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::CreatureMovement
-  enemyCell: {x: 2, y: 3, z: 0}
-  moveSpeed: 1
-  currentCell: {x: 0, y: 0, z: 0}
-  reservedCell: {x: 0, y: 0, z: 0}

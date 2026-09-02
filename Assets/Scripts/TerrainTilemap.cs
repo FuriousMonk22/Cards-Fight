@@ -23,14 +23,14 @@ public class TerrainTilemap : MonoBehaviour
     void Awake()
     {
         tilemap = GetComponent<Tilemap>();
+        Pathfinder.TerrainTM = this;
     }
 
     void Start()
     {
-        DebugText = GameObject.FindGameObjectWithTag("DebugText")
-            .GetComponent<TMP_Text>();
+        DebugText = GameObject.FindGameObjectWithTag("DebugText").GetComponent<TMP_Text>();
 
-        // FIELD
+        // FIELD        
         tile_data.Add("field", new TerrainTileData
         {
             isWalkable = true,
@@ -100,8 +100,7 @@ public class TerrainTilemap : MonoBehaviour
         Vector3Int cell = tilemap.WorldToCell(mouseWorld);
 
         TileBase tile = tilemap.GetTile(cell);
-
-        TerrainTileData data = GetTileData(tile ? tile.name : "");
+        TerrainTileData data = GetTileData(cell);
 
         DebugText.text =
             $"Tile: {(tile ? tile.name : "None")}\n" +
@@ -112,49 +111,15 @@ public class TerrainTilemap : MonoBehaviour
             $"Cold: {data.isCold}";
     }
 
-    public bool CanCreatureTraverse(
-    Vector3Int cell,
-    CreatureData creature)
+    public TerrainTileData GetTileData(Vector3Int cell)
     {
-        if (creature == null)
-            return false;
-
         TileBase tile = tilemap.GetTile(cell);
 
         if (tile == null)
-            return false;
+            return new TerrainTileData();
 
-        TerrainTileData data =
-            GetTileData(tile.name);
-
-        // VOID = perete absolut.
-        // Nici măcar flying nu poate trece.
-        if (tile.name == "void")
-            return false;
-
-        // Flying poate trece peste orice alt teren.
-        if (creature.canFly)
-            return true;
-
-        if (creature.canWalk &&
-            data.isWalkable)
-        {
-            return true;
-        }
-
-        if (creature.canSwim &&
-            data.isSwimmable)
-        {
-            return true;
-        }
-
-        return false;
-    }
-
-    TerrainTileData GetTileData(string tileName)
-    {
-        if (tile_data.ContainsKey(tileName))
-            return tile_data[tileName];
+        if (tile_data.ContainsKey(tile.name))
+            return tile_data[tile.name];
 
         return new TerrainTileData();
     }
