@@ -68,6 +68,13 @@ public class GamePhaseManager : MonoBehaviour
 
         CurrentPhase = GamePhase.Preparation;
 
+        foreach(GameObject go in creaturesGrid.Creatures)
+            if(go != null)
+            {
+                Creature creature = go.GetComponent<Creature>();
+                creature.ResetCooldown();
+            }
+
         timer.StartTimer(preparationDuration);
     }
 

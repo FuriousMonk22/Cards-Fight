@@ -5,6 +5,7 @@ using UnityEngine.InputSystem;
 using UnityEngine.Rendering;
 using System.Collections.Generic;
 using Unity.VisualScripting;
+using UnityEngine.Tilemaps;
 
 public class CreaturesGrid : MonoBehaviour
 {
@@ -112,9 +113,9 @@ public class CreaturesGrid : MonoBehaviour
         return total;
     }
 
-    public void Swap(int x1, int y1, int x2, int y2)
+    public void Swap(int x1, int y1, int x2, int y2, bool force = false)
     {
-        if (!GamePhaseManager.Instance.CanPlaceCreatures)
+        if (!GamePhaseManager.Instance.CanPlaceCreatures && !force)
         {
             Debug.Log("Cannot swap creatures during combat.");
             return;
@@ -166,8 +167,9 @@ public class CreaturesGrid : MonoBehaviour
 
         GameObject go = new GameObject(creatureName);
         go.transform.SetParent(transform);
-        go.transform.position =
-            GridManager.Instance.GroundTilemap.GetCellCenterWorld(spawnCell);
+
+        Tilemap tm = TerrainTM.GetComponent<Tilemap>();
+        go.transform.position = tm.GetCellCenterWorld(spawnCell);
 
         Creature creature = go.AddComponent<Creature>();
         creature.Initialize(data);

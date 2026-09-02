@@ -6,10 +6,13 @@ public class GameManager : MonoBehaviour
     private float tick_cooldown = 0f;
 
     [SerializeField] private CreaturesGrid creaturesGrid;
+    [SerializeField] private Timer timer;
 
     // Update is called once per frame
     void Update()
     {
+        if(!GamePhaseManager.Instance.IsCombat) return;
+
         tick_cooldown -= Time.deltaTime;
 
         if(tick_cooldown <= 0f)
@@ -22,6 +25,9 @@ public class GameManager : MonoBehaviour
     // Go through every Creature and perform actions or clear if dead.
     void TickProcess()
     {
+        if(creaturesGrid.getCreatureCount(0) == 0 || creaturesGrid.getCreatureCount(1) == 0)
+            timer.SkipTimer();
+
         for(int i = 0; i < creaturesGrid.Width; i++)
             for(int j = 0; j < creaturesGrid.Height; j++)
                 if(creaturesGrid.Creatures[i, j] != null)

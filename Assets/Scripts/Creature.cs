@@ -64,8 +64,8 @@ public class Creature : MonoBehaviour
         
         
         if(creaturesGrid.Creatures[target_cell.x, target_cell.y] == null) {
-            creaturesGrid.Swap(cell.x, cell.y, target_cell.x, target_cell.y);
-            cooldownRemaining = creatureData.CooldownAction;
+            creaturesGrid.Swap(cell.x, cell.y, target_cell.x, target_cell.y, true);
+            ResetCooldown();
             return true;
         }
 
@@ -84,12 +84,12 @@ public class Creature : MonoBehaviour
         if(cell_to_attack == cell) return false;
         else
         {
-            Creature creature_to_attack = creaturesGrid.Creatures[cell.x, cell.y].GetComponent<Creature>();
+            Creature creature_to_attack = creaturesGrid.Creatures[cell_to_attack.x, cell_to_attack.y].GetComponent<Creature>();
             
             if(creature_to_attack == null) return false;
 
             creature_to_attack.TakeDamage(creatureData.Attack);
-            cooldownRemaining = creatureData.CooldownAction;
+            ResetCooldown();
             return true;
         }
     }
@@ -97,6 +97,11 @@ public class Creature : MonoBehaviour
     public void DecrementCooldown()
     {
         cooldownRemaining -= 1;
+    }
+
+    public void ResetCooldown()
+    {
+        cooldownRemaining = creatureData.CooldownAction;
     }
 
     // Create healthbar object and add offset pos
