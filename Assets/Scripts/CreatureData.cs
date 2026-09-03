@@ -42,3 +42,4 @@ public enum CreatureArchetype
     Speedster,
     Special,
 }
+

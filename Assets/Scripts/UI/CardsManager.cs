@@ -10,7 +10,7 @@ public class CardsManager : MonoBehaviour
     private void Start()
     {
         cardPrefab = Resources.Load<GameObject>("UI/card");
-        cardPrefab.GetComponent<CreatureCard>().SetCreature("Template");
+        cardPrefab.GetComponent<CreatureCard>().SetCreature("Flamingo");
     }
 
     private void Update()

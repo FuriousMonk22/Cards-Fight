@@ -167,11 +167,14 @@ public class CreaturesGrid : MonoBehaviour
         go.transform.position = tm.GetCellCenterWorld(spawnCell);
 
         Creature creature = go.AddComponent<Creature>();
-        creature.Initialize(data);
-        creature.cell = new Vector3Int(x, y, 0);
+
         creature.creaturesGrid = this;
+        creature.cell = new Vector3Int(x, y, 0);
+        creature.terrainTilemap = TerrainTM;
 
         creature.team = y < Height / 2.0 ? 1 : 0;
+
+        creature.Initialize(data);
 
         if (creature.TryGetComponent<SpriteRenderer>(out SpriteRenderer renderer))
         {

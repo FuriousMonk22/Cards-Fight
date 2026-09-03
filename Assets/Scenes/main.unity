@@ -2012,8 +2012,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: '::'
   Width: 3
   Height: 3
-  CellSize: 1
-  tick_timer: 0
 --- !u!1 &795245719
 GameObject:
   m_ObjectHideFlags: 0
@@ -2907,10 +2905,10 @@ Camera:
   m_LensShift: {x: 0, y: 0}
   m_NormalizedViewPortRect:
     serializedVersion: 2
-    x: 0
-    y: 0
-    width: 1
-    height: 1
+    x: 0.0007843137
+    y: 0.0011876485
+    width: 0.99764705
+    height: 0.99762475
   near clip plane: 0.3
   far clip plane: 1000
   field of view: 60

@@ -86,6 +86,17 @@ public class GamePhaseManager : MonoBehaviour
 
         CurrentPhase = GamePhase.Combat;
 
+        foreach (GameObject go in creaturesGrid.Creatures)
+        {
+            if (go == null)
+                continue;
+
+            Creature creature = go.GetComponent<Creature>();
+
+            creature.ResetShield();
+            creature.OnCombatStart();
+        }
+
         timer.StartTimer(combatDuration);
     }
 }

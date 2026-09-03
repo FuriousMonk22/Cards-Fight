@@ -1,5 +1,6 @@
 using System;
 using UnityEngine;
+using System.Collections.Generic;
 
 // Class that controls Creatures' behaviour and dynamic data
 
@@ -12,22 +13,34 @@ public class Creature : MonoBehaviour
     public Vector3Int cell; // which cell  it's in, updated in CreaturesGrid, will break if not in sync with creaturesGrid.Creatures
     public int team;
     private int healthValue; // current health
+    [SerializeField] private int shieldValue;
     private int cooldownRemaining; // cooldown remaining for next action (Ability/Attack/Move)
 
     private HealthBar healthBar;
     private SpriteRenderer sprite;
     public CreaturesGrid creaturesGrid;
+    public TerrainTilemap terrainTilemap;
+
+    public List<Ability> abilities = new List<Ability>();
 
     // Initialize creature based on CreatureData (Can get from CreatureData.Load(STRING))
     public void Initialize(CreatureData cd)
     {
         creatureData = cd;
+
         healthValue = creatureData.Health;
+        shieldValue = creatureData.Shield;
+
         cooldownRemaining = creatureData.CooldownAction;
         
         sprite = GetComponent<SpriteRenderer>();
         SetupSprite();
         AttachHealthbar();
+
+        if (creatureData.Name == "Flamingo")
+        {
+            abilities.Add(new Water_Defense_Buff(this));
+        }
     }
 
     public int getHealth()
@@ -41,6 +54,21 @@ public class Creature : MonoBehaviour
         healthBar.SetHealth(healthValue, creatureData.Health);
         
         if(healthValue <= 0) creaturesGrid.RemoveCreature(cell.x, cell.y);
+    }
+
+    public int GetShield()
+    {
+        return shieldValue;
+    }
+
+    public void AddShield(int amount)
+    {
+        shieldValue += amount;
+    }
+
+    public void ResetShield()
+    {
+        shieldValue = creatureData.Shield;
     }
 
     // Called every tick by GameManager
@@ -122,5 +150,13 @@ public class Creature : MonoBehaviour
         sprite = gameObject.AddComponent<SpriteRenderer>();
         sprite.sprite = creatureData.Sprite;
         sprite.sortingOrder = 1;
+    }
+
+    public void OnCombatStart()
+    {
+        foreach (Ability ability in abilities)
+        {
+            ability.OnStart();
+        }
     }
 }
