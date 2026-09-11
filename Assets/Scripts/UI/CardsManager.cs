@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
+using System.Collections.Generic;
 
 public class CardsManager : MonoBehaviour
 {
@@ -7,10 +8,16 @@ public class CardsManager : MonoBehaviour
     private int cardCount;
     private int cardLimit = 8;
 
+    // Creature name -> spawn weight
+    private Dictionary<string, int> creatureTypes = new Dictionary<string, int>()
+    {
+        { "Template", 1 },
+        { "Flamingo", 2 }
+    };
+
     private void Start()
     {
         cardPrefab = Resources.Load<GameObject>("UI/card");
-        cardPrefab.GetComponent<CreatureCard>().SetCreature("Flamingo");
     }
 
     private void Update()
@@ -21,27 +28,53 @@ public class CardsManager : MonoBehaviour
         }
     }
 
+    private string GetRandomCreature()
+    {
+        int totalWeight = 0;
+
+        foreach (KeyValuePair<string, int> creature in creatureTypes)
+        {
+            totalWeight += creature.Value;
+        }
+
+        int randomValue = Random.Range(0, totalWeight);
+
+        foreach (KeyValuePair<string, int> creature in creatureTypes)
+        {
+            if (randomValue < creature.Value)
+            {
+                return creature.Key;
+            }
+
+            randomValue -= creature.Value;
+        }
+
+        return "Template";
+    }
+
     private void CreateCard()
     {
-        if (cardCount >= cardLimit) return;
+        if (cardCount >= cardLimit)
+            return;
 
-        // Create CardHolder object
         GameObject cardHolder = new GameObject("CardHolder");
-
-        // Add it as a child of this object
         cardHolder.transform.SetParent(transform, false);
 
-        // Add RectTransform and set size
         RectTransform rect = cardHolder.AddComponent<RectTransform>();
         rect.sizeDelta = new Vector2(126f, 186f);
 
-        // Add CardHolder component
-        cardHolder.AddComponent<CardHolder>();
+        CardHolder holder = cardHolder.AddComponent<CardHolder>();
 
-        // Add the card prefab as a child
         if (cardPrefab != null)
         {
-            GameObject card = Instantiate(cardPrefab, cardHolder.transform, false);
+            GameObject card =
+                Instantiate(cardPrefab, cardHolder.transform, false);
+
+            // Random creature for THIS card
+            string randomCreature = GetRandomCreature();
+
+            CreatureCard creatureCard = card.GetComponent<CreatureCard>();
+            creatureCard.SetCreature(randomCreature);
 
             RectTransform cardRect = card.GetComponent<RectTransform>();
 
@@ -51,8 +84,11 @@ public class CardsManager : MonoBehaviour
                 cardRect.localScale = Vector3.one;
             }
 
-            cardHolder.GetComponent<CardHolder>().Initialize();
+            holder.Initialize();
+
             cardCount++;
+
+            Debug.Log($"Created card: {randomCreature}");
         }
         else
         {
