@@ -102,13 +102,13 @@ public class TerrainTilemap : MonoBehaviour
         TileBase tile = tilemap.GetTile(cell);
         TerrainTileData data = GetTileData(cell);
 
-        DebugText.text =
-            $"Tile: {(tile ? tile.name : "None")}\n" +
-            $"Cell: {cell.x} {cell.y}\n" +
-            $"Walkable: {data.isWalkable}\n" +
-            $"Swimmable: {data.isSwimmable}\n" +
-            $"Hot: {data.isHot}\n" +
-            $"Cold: {data.isCold}";
+//        DebugText.text =
+//            $"Tile: {(tile ? tile.name : "None")}\n" +
+//            $"Cell: {cell.x} {cell.y}\n" +
+//            $"Walkable: {data.isWalkable}\n" +
+//            $"Swimmable: {data.isSwimmable}\n" +
+//            $"Hot: {data.isHot}\n" +
+//            $"Cold: {data.isCold}";
     }
 
     public TerrainTileData GetTileData(Vector3Int cell)
