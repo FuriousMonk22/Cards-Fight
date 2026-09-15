@@ -50,8 +50,8 @@ public class GamePhaseManager : MonoBehaviour
 
     public void StopAllTimers()
     {
-        foreach (Timer activeTimer in FindObjectsOfType<Timer>(true))
-            activeTimer.StopTimer();
+        if (timer != null)
+            timer.StopTimer();
     }
 
     private void OnTimerFinished()

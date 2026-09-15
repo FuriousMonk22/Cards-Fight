@@ -4,7 +4,7 @@ public class CanvasUI : MonoBehaviour
 {
     public void SetUIVisible(string uiName)
     {
-        Debug.Log($"SetUIVisible {uiName}");
+        //Debug.Log($"SetUIVisible {uiName}");
         for (int i = 0; i < transform.childCount; i++)
         {
             Transform child = transform.GetChild(i);

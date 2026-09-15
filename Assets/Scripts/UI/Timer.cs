@@ -133,6 +133,14 @@ public class Timer : MonoBehaviour
         timerSlider.value = duration;
     }
 
+    public void ClearTimer()
+    {
+        running = false;
+        timeRemaining = 0f;
+        timerSlider.value = 0f;
+        timerText.text = "00:00";
+    }
+
     public void SkipTimer()
     {
         timeRemaining = 0f;
