@@ -9,9 +9,12 @@ public class CardHolder : MonoBehaviour, IPointerEnterHandler, IPointerExitHandl
     private Vector2 originalPosition;
     private bool hovering;
     private bool dragging;
+    private bool modifierCard;
 
-    public void Initialize()
+    public void Initialize(bool modifierCard = false)
     {
+        this.modifierCard = modifierCard;
+
         if (child == null)
             child = transform.GetChild(0).GetComponent<RectTransform>();
 
@@ -20,6 +23,9 @@ public class CardHolder : MonoBehaviour, IPointerEnterHandler, IPointerExitHandl
 
     private void Update()
     {
+        if (child == null)
+            return;
+
         bool shouldMoveUp = hovering || dragging;
 
         child.anchoredPosition = shouldMoveUp
@@ -44,7 +50,13 @@ public class CardHolder : MonoBehaviour, IPointerEnterHandler, IPointerExitHandl
 
     public void Consume()
     {
-        GameObject.FindGameObjectWithTag("CardsManager").GetComponent<CardsManager>().subtractCard();
+        CardsManager cardsManager =
+            GameObject.FindGameObjectWithTag("CardsManager").GetComponent<CardsManager>();
+
+        if (modifierCard)
+            cardsManager.SubtractModifierCard();
+        else
+            cardsManager.SubtractCreatureCard();
         
         Destroy(gameObject);
     }

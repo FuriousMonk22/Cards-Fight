@@ -53,7 +53,13 @@ public class Creature : MonoBehaviour
         healthValue = Mathf.Max(healthValue - damage, 0);
         healthBar.SetHealth(healthValue, creatureData.Health);
         
-        if(healthValue <= 0) creaturesGrid.RemoveCreature(cell.x, cell.y);
+        if (healthValue <= 0)
+        {
+            foreach (Ability ability in new List<Ability>(abilities))
+                ability.OnDeath();
+
+            creaturesGrid.RemoveCreature(cell.x, cell.y);
+        }
     }
 
     public int GetShield()

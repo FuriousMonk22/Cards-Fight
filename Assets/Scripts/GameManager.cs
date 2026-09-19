@@ -25,14 +25,20 @@ public class GameManager : MonoBehaviour
 
     public void StartGame()
     {
+        if (creaturesGrid == null || timer == null || terrainTilemap == null)
+        {
+            Debug.LogError("GameManager is missing a CreaturesGrid, Timer, or TerrainTilemap reference.");
+            return;
+        }
+
         pause = false;
-        timer.StartTimer();
         creaturesGrid.InitializeGrid(10, 8);
         terrainTilemap.InitializeTilemap(
             creaturesGrid.Width,
             creaturesGrid.Height,
             tileFillID,
             waterLayout);
+        timer.StartTimer();
     }
 
     public void StopGame()

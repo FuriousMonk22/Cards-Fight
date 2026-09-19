@@ -35,25 +35,25 @@ public class CreatureCard : MonoBehaviour, IPointerDownHandler, IPointerUpHandle
         line = GetComponent<LineRenderer>();
         line.positionCount = 2;
         line.enabled = false;
+
+        title = title != null ? title : FindText("CardParts/Title");
+        ability = ability != null ? ability : FindText("CardParts/Ability");
+        damage = damage != null ? damage : FindText("CardParts/Damage");
+        defense = defense != null ? defense : FindText("CardParts/Defense");
+        speed = speed != null ? speed : FindText("CardParts/Speed");
+
+        if (image == null)
+        {
+            Transform imageTransform = transform.Find("CardParts/Image");
+            if (imageTransform != null)
+                image = imageTransform.GetComponent<Image>();
+        }
     }
 
     private void Start()
     {
         rect.localPosition = rect.localPosition + Vector3.up * 50f;
-        CreatureData data = CreatureData.Load(creatureName);
-
-        if (data == null)
-        {
-            Debug.LogError($"Creature '{creatureName}' not found.");
-            return;
-        }
-
-        title.text = data.Name;
-        image.sprite = data.Sprite;
-        ability.text = "No Ability";
-        damage.text = "STR\n" + data.Attack;
-        defense.text = "DEF\n" + data.Shield;
-        speed.text = "SPD\n" + data.CooldownAction;
+        UpdateCard();
     }
 
     private void Update()
@@ -89,6 +89,33 @@ public class CreatureCard : MonoBehaviour, IPointerDownHandler, IPointerUpHandle
     public void SetCreature(string name)
     {
         creatureName = name;
+        UpdateCard();
+    }
+
+    private void UpdateCard()
+    {
+        if (string.IsNullOrEmpty(creatureName))
+            return;
+
+        CreatureData data = CreatureData.Load(creatureName);
+        if (data == null)
+        {
+            Debug.LogError($"Creature '{creatureName}' not found.");
+            return;
+        }
+
+        if (title != null) title.text = data.Name;
+        if (image != null) image.sprite = data.Sprite;
+        if (ability != null) ability.text = "No Ability";
+        if (damage != null) damage.text = "STR\n" + data.Attack;
+        if (defense != null) defense.text = "DEF\n" + data.Shield;
+        if (speed != null) speed.text = "SPD\n" + data.CooldownAction;
+    }
+
+    private TMP_Text FindText(string path)
+    {
+        Transform textTransform = transform.Find(path);
+        return textTransform == null ? null : textTransform.GetComponent<TMP_Text>();
     }
 
     public void OnPointerDown(PointerEventData eventData)

@@ -2,8 +2,23 @@ using UnityEngine;
 
 public abstract class Ability
 {
-    public abstract void OnStart();
-    public abstract void OnDeath();
-    public abstract void OnMove();
-    public abstract void OnAttack();
+    public string Name;
+    public string Description;
+
+    protected Creature owner;
+
+    protected Ability(Creature owner)
+    {
+        this.owner = owner;
+    }
+
+    public void SetOwner(Creature owner)
+    {
+        this.owner = owner;
+    }
+
+    public virtual void OnStart() { }
+    public virtual void OnDeath() { }
+    public virtual void OnMove() { }
+    public virtual void OnAttack() { }
 }

@@ -2,15 +2,13 @@ using UnityEngine;
 
 public class Water_Defense_Buff : Ability
 {
-    private Creature owner;
     private CreaturesGrid creaturesGrid;
     private TerrainTilemap terrainTilemap;
 
     private int defenseBuff = 5;
 
-    public Water_Defense_Buff(Creature owner)
+    public Water_Defense_Buff(Creature owner) : base(owner)
     {
-        this.owner = owner;
         creaturesGrid = owner.creaturesGrid;
         terrainTilemap = Pathfinder.TerrainTM;
     }
@@ -47,17 +45,5 @@ public class Water_Defense_Buff : Ability
                 );
             }
         }
-    }
-
-    public override void OnDeath()
-    {
-    }
-
-    public override void OnMove()
-    {
-    }
-
-    public override void OnAttack()
-    {
     }
 }

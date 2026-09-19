@@ -157,9 +157,9 @@ public class CreaturesGrid : MonoBehaviour
         Debug.Log($"Swapped ({x1}, {y1}) with ({x2}, {y2})");
     }
 
-    public bool Spawn(string creatureName, int x, int y)
+    public bool Spawn(string creatureName, int x, int y, bool force = false)
     {
-        if (!GamePhaseManager.Instance.CanPlaceCreatures)
+        if (!force && !GamePhaseManager.Instance.CanPlaceCreatures)
             return false;
 
         if (Creatures == null || IsOccupied(x, y))

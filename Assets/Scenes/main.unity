@@ -3588,32 +3588,27 @@ MonoBehaviour:
   - tile: {fileID: 11400000, guid: 8faf0e0e2c4fa1359ba1c35e44f9af34, type: 2}
     isHot: 0
     isCold: 0
-    isWalkable: 1
+    isWalkable: 0
     isSwimmable: 0
   - tile: {fileID: 11400000, guid: 42ffe4b874bc67dd79e56964e4219840, type: 2}
     isHot: 0
     isCold: 0
     isWalkable: 0
-    isSwimmable: 1
+    isSwimmable: 0
   - tile: {fileID: 11400000, guid: 230afad3a78b0787598f8b7806b96ba7, type: 2}
-    isHot: 1
+    isHot: 0
     isCold: 0
-    isWalkable: 1
+    isWalkable: 0
     isSwimmable: 0
   - tile: {fileID: 11400000, guid: d2ba9cd5ca13bb0598ab833d038e4e28, type: 2}
     isHot: 0
-    isCold: 1
-    isWalkable: 1
-    isSwimmable: 0
-  - tile: {fileID: 11400000, guid: fc9ed699618acea4cbf043e116d431d4, type: 2}
-    isHot: 0
-    isCold: 1
+    isCold: 0
     isWalkable: 0
     isSwimmable: 0
-  - tile: {fileID: 11400000, guid: a0efb823bc84ca7c6b24cabc3d5a3bfb, type: 2}
+  - tile: {fileID: 11400000, guid: d2ba9cd5ca13bb0598ab833d038e4e28, type: 2}
     isHot: 0
     isCold: 0
-    isWalkable: 1
+    isWalkable: 0
     isSwimmable: 0
 --- !u!1 &695350753
 GameObject:
@@ -7736,10 +7731,10 @@ Camera:
   m_LensShift: {x: 0, y: 0}
   m_NormalizedViewPortRect:
     serializedVersion: 2
-    x: 0
-    y: 0
-    width: 1
-    height: 1
+    x: 0.0015527951
+    y: 0.0034482758
+    width: 0.9968944
+    height: 0.99310344
   near clip plane: 0.3
   far clip plane: 1000
   field of view: 60

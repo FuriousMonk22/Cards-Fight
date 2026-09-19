@@ -35,13 +35,13 @@ public class TerrainTilemap : MonoBehaviour
         TileBase tile = tilemap.GetTile(cell);
         TerrainTileData data = GetTileData(cell);
 
-//        DebugText.text =
-//            $"Tile: {(tile ? tile.name : "None")}\n" +
-//            $"Cell: {cell.x} {cell.y}\n" +
-//            $"Walkable: {data.isWalkable}\n" +
-//            $"Swimmable: {data.isSwimmable}\n" +
-//            $"Hot: {data.isHot}\n" +
-//            $"Cold: {data.isCold}";
+        //DebugText.text =
+        //    $"Tile: {(tile ? tile.name : "None")}\n" +
+        //    $"Cell: {cell.x} {cell.y}\n" +
+        //    $"Walkable: {data.isWalkable}\n" +
+        //    $"Swimmable: {data.isSwimmable}\n" +
+        //    $"Hot: {data.isHot}\n" +
+        //    $"Cold: {data.isCold}";
     }
 
     public TerrainTileData GetTileData(Vector3Int cell)
@@ -62,15 +62,42 @@ public class TerrainTilemap : MonoBehaviour
 
     public void InitializeTilemap(int width = 10, int height = 10, int tile_id = 1, int water_layout = 0)
     {
+        if (tilemap == null)
+            tilemap = GetComponent<Tilemap>();
+
+        if (tilemap == null)
+        {
+            Debug.LogError("TerrainTilemap requires a Tilemap component.");
+            return;
+        }
+
         TileBase voidTile = GetTileById(0);
         TileBase insideTile = GetTileById(tile_id);
         TileBase waterTile = GetTileById(2);
 
-        if (voidTile == null || insideTile == null || width < 0 || height < 0)
+        if (width < 0 || height < 0)
+        {
+            Debug.LogError($"Invalid terrain dimensions: {width}x{height}.");
             return;
+        }
+
+        if (voidTile == null)
+        {
+            Debug.LogError("TerrainTilemap is missing tileData[0], the border/void tile.");
+            return;
+        }
+
+        if (insideTile == null)
+        {
+            Debug.LogError($"TerrainTilemap is missing a valid tileData[{tile_id}] interior tile.");
+            return;
+        }
 
         if ((water_layout == 1 || water_layout == 2) && waterTile == null)
+        {
+            Debug.LogError("TerrainTilemap is missing tileData[2], required by the selected water layout.");
             return;
+        }
 
         tilemap.ClearAllTiles();
 
