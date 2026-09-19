@@ -38,14 +38,20 @@ public class GamePhaseManager : MonoBehaviour
 
     private void Start()
     {
-        timer.OnTimerFinished += OnTimerFinished;
-        StartPreparation();
+        if (timer != null)
+            timer.OnTimerFinished += OnTimerFinished;
     }
 
     private void OnDestroy()
     {
         if (timer != null)
             timer.OnTimerFinished -= OnTimerFinished;
+    }
+
+    public void StopAllTimers()
+    {
+        if (timer != null)
+            timer.StopTimer();
     }
 
     private void OnTimerFinished()

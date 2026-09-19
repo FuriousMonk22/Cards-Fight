@@ -26,7 +26,6 @@ public class CreaturesGrid : MonoBehaviour
     {
         TerrainTM = GameObject.FindWithTag("TerrainTilemap").GetComponent<TerrainTilemap>();
         Pathfinder.creaturesGrid = this;
-        InitializeGrid(10, 8);
     }
 
     private void Update()
@@ -88,6 +87,23 @@ public class CreaturesGrid : MonoBehaviour
         Width = width;
         Height = height;
         Creatures = new GameObject[width, height];
+    }
+
+    public void ClearGrid()
+    {
+        if (Creatures == null)
+            return;
+
+        for (int x = 0; x < Width; x++)
+        {
+            for (int y = 0; y < Height; y++)
+            {
+                if (Creatures[x, y] != null)
+                    Destroy(Creatures[x, y]);
+
+                Creatures[x, y] = null;
+            }
+        }
     }
 
     public bool IsOccupied(int x, int y)

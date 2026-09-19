@@ -2,11 +2,46 @@ using UnityEngine;
 
 public class GameManager : MonoBehaviour
 {
+    public bool pause = true;
+
     private float tick_duration = 0.25f;
     private float tick_cooldown = 0f;
 
     [SerializeField] private CreaturesGrid creaturesGrid;
     [SerializeField] private Timer timer;
+    [SerializeField] private TerrainTilemap terrainTilemap;
+    [SerializeField] private int tileFillID = 1;
+    [SerializeField] private int waterLayout = 0;
+
+    public void SetTileFillID(int tileID)
+    {
+        tileFillID = tileID;
+    }
+
+    public void SetWaterLayout(int layout)
+    {
+        waterLayout = layout;
+    }
+
+    public void StartGame()
+    {
+        pause = false;
+        timer.StartTimer();
+        creaturesGrid.InitializeGrid(10, 8);
+        terrainTilemap.InitializeTilemap(
+            creaturesGrid.Width,
+            creaturesGrid.Height,
+            tileFillID,
+            waterLayout);
+    }
+
+    public void StopGame()
+    {
+        pause = true;
+        timer.ClearTimer();
+        terrainTilemap.ClearTilemap();
+        creaturesGrid.ClearGrid();
+    }
 
     // Update is called once per frame
     void Update()

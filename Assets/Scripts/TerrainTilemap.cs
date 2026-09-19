@@ -1,12 +1,13 @@
 using UnityEngine;
 using UnityEngine.Tilemaps;
-using TMPro;
 using UnityEngine.InputSystem;
 using System.Collections.Generic;
 
 [System.Serializable]
 public class TerrainTileData
 {
+    [Tooltip("The TileBase represented by this terrain definition.")]
+    public TileBase tile;
     public bool isHot = false;
     public bool isCold = false;
     public bool isWalkable = false;
@@ -16,82 +17,14 @@ public class TerrainTileData
 public class TerrainTilemap : MonoBehaviour
 {
     public Tilemap tilemap;
-    TMP_Text DebugText;
 
-    Dictionary<string, TerrainTileData> tile_data = new Dictionary<string, TerrainTileData>();
+    [Tooltip("Add one entry for each TileBase used by this tilemap.")]
+    public List<TerrainTileData> tileData = new List<TerrainTileData>();
 
     void Awake()
     {
         tilemap = GetComponent<Tilemap>();
         Pathfinder.TerrainTM = this;
-    }
-
-    void Start()
-    {
-        DebugText = GameObject.FindGameObjectWithTag("DebugText").GetComponent<TMP_Text>();
-
-        // FIELD        
-        tile_data.Add("field", new TerrainTileData
-        {
-            isWalkable = true,
-            isSwimmable = false
-        });
-
-        // FOREST
-        tile_data.Add("forest", new TerrainTileData
-        {
-            isWalkable = true,
-            isSwimmable = false
-        });
-
-        // MOUNTAIN
-        // Perete pentru walk/swim.
-        // Flying poate trece peste el.
-        tile_data.Add("mountain", new TerrainTileData
-        {
-            isWalkable = false,
-            isSwimmable = false,
-            isCold = true
-        });
-
-        // SAND
-        tile_data.Add("sand", new TerrainTileData
-        {
-            isWalkable = true,
-            isSwimmable = false,
-            //isHot = true
-        });
-
-        // SNOW
-        tile_data.Add("snow", new TerrainTileData
-        {
-            isWalkable = true,
-            isSwimmable = false,
-            //isCold = true
-        });
-
-        // WATER
-        tile_data.Add("water", new TerrainTileData
-        {
-            isWalkable = false,
-            isSwimmable = true
-        });
-
-        // VOID
-        // Nimeni care merge sau înoată nu poate intra.
-        tile_data.Add("void", new TerrainTileData
-        {
-            isWalkable = false,
-            isSwimmable = false
-        });
-
-        // NEW TILE
-        // Până când îi dai un rol clar, îl tratăm ca perete.
-        tile_data.Add("New Tile", new TerrainTileData
-        {
-            isWalkable = false,
-            isSwimmable = false
-        });
     }
 
     void Update()
@@ -102,13 +35,13 @@ public class TerrainTilemap : MonoBehaviour
         TileBase tile = tilemap.GetTile(cell);
         TerrainTileData data = GetTileData(cell);
 
-        DebugText.text =
-            $"Tile: {(tile ? tile.name : "None")}\n" +
-            $"Cell: {cell.x} {cell.y}\n" +
-            $"Walkable: {data.isWalkable}\n" +
-            $"Swimmable: {data.isSwimmable}\n" +
-            $"Hot: {data.isHot}\n" +
-            $"Cold: {data.isCold}";
+//        DebugText.text =
+//            $"Tile: {(tile ? tile.name : "None")}\n" +
+//            $"Cell: {cell.x} {cell.y}\n" +
+//            $"Walkable: {data.isWalkable}\n" +
+//            $"Swimmable: {data.isSwimmable}\n" +
+//            $"Hot: {data.isHot}\n" +
+//            $"Cold: {data.isCold}";
     }
 
     public TerrainTileData GetTileData(Vector3Int cell)
@@ -118,10 +51,74 @@ public class TerrainTilemap : MonoBehaviour
         if (tile == null)
             return new TerrainTileData();
 
-        if (tile_data.ContainsKey(tile.name))
-            return tile_data[tile.name];
+        foreach (TerrainTileData data in tileData)
+        {
+            if (data != null && data.tile == tile)
+                return data;
+        }
 
         return new TerrainTileData();
+    }
+
+    public void InitializeTilemap(int width = 10, int height = 10, int tile_id = 1, int water_layout = 0)
+    {
+        TileBase voidTile = GetTileById(0);
+        TileBase insideTile = GetTileById(tile_id);
+        TileBase waterTile = GetTileById(2);
+
+        if (voidTile == null || insideTile == null || width < 0 || height < 0)
+            return;
+
+        if ((water_layout == 1 || water_layout == 2) && waterTile == null)
+            return;
+
+        tilemap.ClearAllTiles();
+
+        for (int x = -1; x <= width; x++)
+        {
+            for (int y = -1; y <= height; y++)
+            {
+                bool isBorder = x == -1 || y == -1 || x == width || y == height;
+                TileBase tile = isBorder ? voidTile : insideTile;
+
+                if (!isBorder && water_layout == 1)
+                {
+                    int lowerMiddleRow = Mathf.Max(0, height / 2 - 1);
+                    int upperMiddleRow = Mathf.Min(height - 1, lowerMiddleRow + 1);
+                    bool inWaterLine = x < width * 0.75f &&
+                                       (y == lowerMiddleRow || y == upperMiddleRow);
+
+                    if (inWaterLine)
+                        tile = waterTile;
+                }
+                else if (!isBorder && water_layout == 2)
+                {
+                    float middleX = (width - 1) * 0.5f;
+                    float middleY = (height - 1) * 0.5f;
+                    float distanceFromMiddle = Vector2.Distance(
+                        new Vector2(x, y),
+                        new Vector2(middleX, middleY));
+
+                    if (distanceFromMiddle > width * 0.2f)
+                        tile = waterTile;
+                }
+
+                tilemap.SetTile(new Vector3Int(x, y, 0), tile);
+            }
+        }
+    }
+
+    public void ClearTilemap()
+    {
+        tilemap.ClearAllTiles();
+    }
+
+    private TileBase GetTileById(int id)
+    {
+        if (id < 0 || id >= tileData.Count || tileData[id] == null)
+            return null;
+
+        return tileData[id].tile;
     }
 
     public Vector3 GetWorldPosition(Vector3Int cell)
